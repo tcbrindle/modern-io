@@ -31,6 +31,8 @@ struct SyncReadStream
 
 struct SyncWriteStream
 {
+    template <typename T>
+    auto requires_(T&& t) -> void;
 };
 
 struct SeekableStream
