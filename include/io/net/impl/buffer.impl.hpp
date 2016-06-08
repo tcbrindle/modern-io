@@ -566,7 +566,7 @@ public:
     using mutable_buffers_type = mutable_buffer;
 
     explicit dynamic_string_buffer(std::basic_string<CharT, Traits, Allocator>& str) noexcept
-        : str_(str), size_(str.size()), max_size_(max_size)
+        : str_(str), size_(str.size()), max_size_(str.max_size())
     {}
 
     dynamic_string_buffer(std::basic_string<CharT, Traits, Allocator>& str,
