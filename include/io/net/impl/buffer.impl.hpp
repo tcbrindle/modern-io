@@ -340,7 +340,7 @@ inline const_buffer buffer(const const_buffer& b) noexcept
     return b;
 }
 
-const_buffer buffer(const const_buffer& b, size_t n) noexcept
+inline const_buffer buffer(const const_buffer& b, size_t n) noexcept
 {
     return const_buffer{b.data(), std::min(b.size(), n)};
 }
