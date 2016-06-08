@@ -106,10 +106,10 @@ public:
     /// SyncWriteStream implementation
     template <typename ConstBufSeq,
               CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
-    std::size_t write_some(ConstBufSeq&& cb)
+    std::size_t write_some(const ConstBufSeq& cb)
     {
         std::error_code ec;
-        auto bytes_written = this->write_some(std::forward<ConstBufSeq>(cb), ec);
+        auto bytes_written = this->write_some(cb, ec);
         if (ec) {
             throw std::system_error{ec};
         }
@@ -119,7 +119,7 @@ public:
     /// SyncWriteStream implementation
     template <typename ConstBufSeq,
               CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
-    std::size_t write_some(ConstBufSeq&& cb, std::error_code& ec)
+    std::size_t write_some(const ConstBufSeq& cb, std::error_code& ec)
     {
         ec.clear();
 
