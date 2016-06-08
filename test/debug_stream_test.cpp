@@ -96,4 +96,22 @@ TEST_CASE("Debug streams can be read from", "[debug_stream]")
                            std::begin(buf) + std::strlen(test_string),
                            test_string));
     }
+
+    SECTION("...using a dynamic buffer") {
+        std::vector<char> buf;
+        std::error_code ec;
+        REQUIRE_NOTHROW(io::read(d, io::dynamic_buffer(buf),
+                                 io::transfer_exactly{std::strlen(test_string)},
+                                 ec));
+        REQUIRE(buf.size() == std::strlen(test_string));
+        REQUIRE(rng::equal(buf, test_string));
+    }
+
+    SECTION("...using a dynamic buffer (throwing)") {
+        std::vector<char> buf;
+        REQUIRE_THROWS_AS(io::read(d, io::dynamic_buffer(buf),
+                                   io::transfer_exactly{std::strlen(test_string)}),
+                          std::system_error);
+        REQUIRE(rng::equal(buf, test_string));
+    }
 }
