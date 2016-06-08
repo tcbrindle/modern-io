@@ -198,13 +198,6 @@ private:
     offset_type pos_ = 0;
 };
 
-static_assert(SyncReadStream<debug_stream>(),
-              "debug_stream does not meet the SyncReadStream requirements");
-static_assert(SyncWriteStream<debug_stream>(),
-              "debug_stream does not meet the SyncWriteStream requirements");
-static_assert(SeekableStream<debug_stream>(),
-              "debug_stream does not meet the SeekableStream requirements");
-
 }
 
 #endif
