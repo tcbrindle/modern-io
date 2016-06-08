@@ -23,7 +23,8 @@ class stream_reader
 {
 public:
     using stream_type = Stream;
-    using buffer_type = std::array<byte, BufferSize>;
+    using buffer_type = std::array<char, BufferSize>;
+    using buffer_iterator_type = rng::range_iterator_t<buffer_type>;
 
     stream_reader() = default;
 
@@ -44,9 +45,9 @@ private:
 
         cursor(stream_reader& sr) : sr_{&sr} {}
 
-        byte get() const
+        char get() const
         {
-            return *sr_->it_;
+            return *sr_->pos_;
         }
 
         void next()
@@ -65,22 +66,22 @@ private:
 
     void next()
     {
-        if (++it_ == rng::end(buf_) && !done_) {
+        if (++pos_ == rng::end(buf_) && !done_) {
             fill_buffer();
         }
     }
 
     bool done() const
     {
-        return (it_ == last_);
+        return pos_ == last_;
     }
 
     void fill_buffer()
     {
         std::error_code ec{};
         auto bytes_read = io::read(stream_, io::buffer(buf_), ec);
-        it_ = rng::begin(buf_);
-        last_ = it_ + bytes_read;
+        pos_ = rng::begin(buf_);
+        last_ = pos_ + bytes_read;
 
         if (ec) {
             if (ec.value() == static_cast<int>(stream_errc::eof)) {
@@ -91,11 +92,10 @@ private:
         }
     }
 
-
     stream_type stream_{};
     buffer_type buf_{{}};
-    typename buffer_type::const_iterator it_{};
-    typename buffer_type::const_iterator last_{};
+    buffer_iterator_type pos_{};
+    buffer_iterator_type last_{};
     bool done_ = true;
 };
 
