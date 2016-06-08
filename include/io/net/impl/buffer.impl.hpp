@@ -651,8 +651,8 @@ dynamic_buffer(std::basic_string<CharT, Traits, Allocator>& str, std::size_t n) 
 // 17 Buffer-oriented streams [buffer.stream]
 //
 
-// FIXME: Set this to something sensible
-constexpr std::size_t max_single_transfer_size = std::size_t(-1);
+// Value taken from Asio
+constexpr std::size_t max_single_transfer_size = 65536;
 
 // 17.2 Class transfer_all [buffer.stream.transfer.all]
 
