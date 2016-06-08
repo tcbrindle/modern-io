@@ -7,6 +7,7 @@
 namespace io {
 
 using net::stream_errc;
+using net::stream_category;
 using net::make_error_code;
 using net::make_error_condition;
 
