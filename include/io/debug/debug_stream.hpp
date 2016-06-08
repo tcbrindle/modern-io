@@ -42,7 +42,7 @@ public:
         std::error_code ec;
         auto bytes_read = read_some(mb, ec);
         if (ec) {
-            throw std::error_code(ec);
+            throw std::system_error{ec};
         }
         return bytes_read;
     }
