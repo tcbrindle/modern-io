@@ -136,7 +136,7 @@ public:
             if (ec) {
                 break;
             }
-            std::next(first);
+            ++first;
         }
     }
 
