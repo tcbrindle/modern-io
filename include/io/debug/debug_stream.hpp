@@ -191,7 +191,7 @@ public:
     }
 
     /// SeekableStream implementation
-    offset_type get_position() noexcept { return pos_; }
+    offset_type get_position() const noexcept { return pos_; }
 
 private:
     std::string str_;
