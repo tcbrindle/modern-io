@@ -138,6 +138,8 @@ public:
             }
             ++first;
         }
+
+        return total_bytes_written;
     }
 
     std::size_t write_some(const const_buffer& cb, std::error_code& ec)
