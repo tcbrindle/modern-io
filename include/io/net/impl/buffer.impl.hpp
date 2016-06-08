@@ -139,7 +139,7 @@ constexpr bool is_detected_convertible_v = is_detected_convertible<To, Op, Args.
 // is_mutable_buffer_sequence implementation
 
 template <class T>
-using buffer_sequence_iter_value_t = decltype(net::buffer_sequence_begin(std::declval<T>()));
+using buffer_sequence_iter_value_t = decltype(*net::buffer_sequence_begin(std::declval<T>()));
 
 // FIXME: Need to test whether the return of net::buffer_sequence{begin|end} is a bidir iter.
 
@@ -246,6 +246,12 @@ template<class C> auto buffer_sequence_end(const C& c) -> decltype(c.end())
     return c.end();
 }
 
+static_assert(is_mutable_buffer_sequence<mutable_buffer>::value,
+              "net::mutable_buffer does not meet the MutableBufferSequence requirements!");
+
+static_assert(is_const_buffer_sequence<const_buffer>::value,
+              "net::const_buffer does not meet the ConstBufferSequence requirements!");
+
 // 16.8 Function buffer_size [buffer.size]
 
 template<class ConstBufferSequence>
@@ -260,6 +266,17 @@ size_t buffer_size(const ConstBufferSequence& buffers) noexcept
         total_size += b.size();
     }
     return total_size;
+}
+
+// Extension: these two functions are not in the TS
+inline size_t buffer_size(const mutable_buffer& b) noexcept
+{
+    return b.size();
+}
+
+inline size_t buffer_size(const const_buffer& b) noexcept
+{
+    return b.size();
 }
 
 // 16.9 Function buffer_copy [buffer.copy]
@@ -533,6 +550,9 @@ private:
     const std::size_t max_size_;
 };
 
+static_assert(is_dynamic_buffer<dynamic_vector_buffer<char, std::allocator<char>>>::value,
+              "net::dynamic_vector_buffer does not meet the DynamicBuffer requirements!");
+
 // 16.13 Class template dynamic_string_buffer [buffer.dynamic.string]
 
 template<class CharT, class Traits, class Allocator>
@@ -593,6 +613,9 @@ private:
     std::size_t size_;
     const std::size_t max_size_;
 };
+
+static_assert(is_dynamic_buffer<dynamic_string_buffer<char, std::char_traits<char>, std::allocator<char>>>::value,
+              "net::dynamic_string_buffer does not meet the DynamicBuffer requirements!");
 
 // 16.14 Dynamic buffer creation functions [buffer.dynamic.creation]
 
@@ -687,7 +710,6 @@ private:
 
 // 17.5 Synchronous read operations [buffer.read]
 
-
 template<class SyncReadStream, class MutableBufferSequence>
 std::size_t read(SyncReadStream& stream,
                  const MutableBufferSequence& buffers)
@@ -763,8 +785,8 @@ std::size_t read(SyncReadStream& stream, DynamicBuffer&& b,
 template<class SyncReadStream, class DynamicBuffer,
         class CompletionCondition, class>
 std::size_t read(SyncReadStream& stream, DynamicBuffer&& b,
-            CompletionCondition completion_condition,
-            std::error_code& ec)
+                 CompletionCondition completion_condition,
+                 std::error_code& ec)
 {
     ec.clear();
 
@@ -852,7 +874,7 @@ std::size_t write(SyncWriteStream& stream, DynamicBuffer&& b,
 {
     std::error_code ec;
     std::size_t bytes_written = write(stream, std::forward<DynamicBuffer>(b),
-                                   completion_condition, ec);
+                                      completion_condition, ec);
     if (ec) throw std::system_error(ec, __func__);
     return bytes_written;
 }
