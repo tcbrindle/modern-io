@@ -394,7 +394,7 @@ const_buffer buffer(const std::basic_string<CharT, Traits, Allocator>& data) noe
 #ifdef IO_HAVE_STRING_VIEW
 
 template<class CharT, class Traits>
-const_buffer buffer(std::basic_string_view<CharT, Traits> data) noexcept
+const_buffer buffer(io_std::basic_string_view<CharT, Traits> data) noexcept
 {
     return buffer(std::begin(data) != std::end(data) ? std::addressof(*std::begin(data)) : nullptr,
                   (std::end(data) - std::begin(data)) * sizeof(*std::begin(data)));
@@ -461,7 +461,7 @@ const_buffer buffer(const std::basic_string<CharT, Traits, Allocator>& data,
 #ifdef IO_HAVE_STRING_VIEW
 
 template<class CharT, class Traits>
-const_buffer buffer(basic_string_view<CharT, Traits> data,
+const_buffer buffer(io_std::basic_string_view<CharT, Traits> data,
                     size_t n) noexcept
 {
     return buffer(buffer(data), n);

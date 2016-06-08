@@ -3,6 +3,7 @@
 #define IO_NET_BUFFER_HPP
 
 #include <array>
+#include <io/io_std/string_view.hpp>
 #include <string>
 #include <system_error>
 #include <vector>
@@ -129,7 +130,7 @@ buffer(const std::basic_string<CharT, Traits, Allocator>& data) noexcept;
 
 #ifdef IO_HAVE_STRING_VIEW
 template<class CharT, class Traits>
-const_buffer buffer(std::basic_string_view<CharT, Traits> data) noexcept;
+const_buffer buffer(io_std::basic_string_view<CharT, Traits> data) noexcept;
 #endif // IO_HAVE_STRING_VIEW
 
 template <class T, std::size_t N>
@@ -164,7 +165,7 @@ const_buffer buffer(const std::basic_string<CharT, Traits, Allocator>& data,
 
 #ifdef IO_HAVE_STRING_VIEW
 template<class CharT, class Traits>
-const_buffer buffer(basic_string_view<CharT, Traits> data,
+const_buffer buffer(io_std::basic_string_view<CharT, Traits> data,
                     std::size_t n) noexcept;
 #endif // IO_HAVE_STRING_VIEW
 
@@ -301,10 +302,10 @@ std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
 
 #ifdef IO_HAVE_STRING_VIEW
 template<class SyncReadStream, class DynamicBuffer>
-std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b, std::string_view delim);
+std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b, io_std::string_view delim);
 template<class SyncReadStream, class DynamicBuffer>
 std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
-                  std::string_view delim, std::error_code& ec);
+                       io_std::string_view delim, std::error_code& ec);
 #endif // IO_HAVE_STRING_VIEW
 
 // Asynchronous delimited read operations -- NOT IMPLEMENTED
