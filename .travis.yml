@@ -24,7 +24,7 @@ matrix:
             - ninja-build
           sources: &sources
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
+            #- llvm-toolchain-precise-3.6
             - kalakris-cmake
 
     - os: linux
@@ -48,22 +48,22 @@ matrix:
       compiler: gcc
       addons: *gcc6
 
-    - os: linux
-      env: CONFIGURATION=Debug COMPILER=clang++-3.6
-      compiler: clang
-      addons: &clang36
-        apt:
-          packages:
-            - clang-3.6
-            - g++-5
-            - cmake
-            - ninja-build
-          sources: *sources
+   # - os: linux
+   #   env: CONFIGURATION=Debug COMPILER=clang++-3.6
+   #   compiler: clang
+   #   addons: &clang36
+   #     apt:
+   #       packages:
+   #         - clang-3.6
+   #         - g++-5
+   #         - cmake
+   #         - ninja-build
+   #       sources: *sources
 
-    - os: linux
-      env: CONFIGURATION=Release COMPILER=clang++-3.6
-      compiler: clang
-      addons: *clang36
+   # - os: linux
+   #   env: CONFIGURATION=Release COMPILER=clang++-3.6
+   #   compiler: clang
+   #   addons: *clang36
 
     - os: osx
       env: CONFIGURATION=Debug COMPILER=clang++
