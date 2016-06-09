@@ -135,3 +135,35 @@ TEST_CASE("Debug streams can be read from", "[debug_stream]")
         REQUIRE(rng::equal(buf, test_string));
     }
 }
+
+TEST_CASE("Debug streams can be written to", "[debug_stream]")
+{
+    io::debug_stream d{};
+
+    SECTION("Using a static buffer") {
+        std::error_code ec{};
+        std::size_t bytes_written = 0;
+        REQUIRE_NOTHROW(bytes_written = d.write_some(io::buffer(test_string), ec));
+        REQUIRE_FALSE(ec);
+        REQUIRE(bytes_written == test_string.size());
+        REQUIRE(d.str() == test_string);
+    }
+
+    SECTION("Using a static buffer (throwing)") {
+        std::size_t bytes_written = 0;
+        REQUIRE_NOTHROW(bytes_written = d.write_some(io::buffer(test_string)));
+        REQUIRE(bytes_written == test_string.size());
+        REQUIRE(d.str() == test_string);
+    }
+
+    SECTION("Using a dynamic buffer") {
+        std::string test_string_copy(test_string);
+        std::error_code ec{};
+        std::size_t bytes_written = 0;
+        REQUIRE_NOTHROW(bytes_written = io::write(d, io::dynamic_buffer(test_string_copy), ec));
+        REQUIRE_FALSE(ec);
+        REQUIRE(bytes_written == test_string.size());
+        REQUIRE(test_string_copy == test_string);
+        REQUIRE(d.str() == test_string);
+    }
+}
