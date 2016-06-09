@@ -893,9 +893,8 @@ std::size_t write(SyncWriteStream& stream, DynamicBuffer&& b,
     std::size_t total_bytes_written = 0;
     std::size_t next_write_size = b.capacity();
 
-    while (b.size() < b.max_size()) {
-        auto buf = b.prepare(next_write_size);
-        std::size_t bytes_written = stream.write_some(buf, ec);
+    while (b.size() != 0 && next_write_size != 0) {
+        std::size_t bytes_written = stream.write_some(b.data(), ec);
         total_bytes_written += bytes_written;
         next_write_size = completion_condition(ec, total_bytes_written);
         b.consume(bytes_written);
