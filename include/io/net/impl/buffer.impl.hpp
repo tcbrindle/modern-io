@@ -535,6 +535,7 @@ public:
     void commit(std::size_t n)
     {
         size_ += std::min(n, vec_.size() - size_);
+        vec_.resize(size_);
     }
 
     void consume(std::size_t n)

@@ -34,10 +34,7 @@ using net::transfer_all;
 using net::transfer_at_least;
 using net::transfer_exactly;
 
-using net::read;
 using net::write;
-
-using net::read_until;
 
 }
 

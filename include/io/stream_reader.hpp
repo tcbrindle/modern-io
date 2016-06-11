@@ -4,13 +4,13 @@
 
 #include <io/io_concepts.hpp>
 #include <io/buffer.hpp>
+#include <io/read.hpp>
 #include <io/types.hpp>
 
 #include <range/v3/view_facade.hpp>
 
 #include <array>
 #include <cstdio> // For BUFSIZ
-
 
 namespace io {
 
