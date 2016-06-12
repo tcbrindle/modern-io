@@ -9,6 +9,7 @@
 #ifndef IO_NET_BUFFER_HPP
 #define IO_NET_BUFFER_HPP
 
+#include <algorithm>
 #include <array>
 #include <io/io_std/string_view.hpp>
 #include <string>
