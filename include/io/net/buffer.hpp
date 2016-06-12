@@ -1233,6 +1233,72 @@ std::size_t write(SyncWriteStream& stream, DynamicBuffer&& b,
     return total_bytes_written;
 }
 
+template <class SyncReadStream, class DynamicBuffer>
+std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b, char delim)
+{
+    std::error_code ec;
+    std::size_t bytes_read = read_until(s, std::forward<DynamicBuffer>(b),
+                                        delim, ec);
+    if (ec) {
+        throw std::system_error{ec};
+    }
+    return bytes_read;
+}
+
+template <class SyncReadStream, class DynamicBuffer>
+std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
+                       char delim, std::error_code& ec)
+{
+    std::size_t total_bytes_read = 0;
+    std::size_t next_read_size = max_single_transfer_size;
+    bool found = false;
+
+    while (!found && b.size() != b.max_size() && !ec) {
+        auto buf = b.prepare(next_read_size);
+        size_t bytes_read = s.read_some(buf, ec);
+        b.commit(bytes_read);
+        const char* data_ptr = static_cast<const char*>(buf.data());
+
+        const char* delim_ptr = std::find(data_ptr, data_ptr + bytes_read,
+                                          delim);
+
+        if (delim_ptr != data_ptr + bytes_read) {
+            found = true;
+        }
+
+        total_bytes_read += std::distance(data_ptr, delim_ptr);
+    }
+
+    if (!found) {
+        ec = make_error_code(stream_errc::not_found);
+    } else {
+        // Hack hack hack!
+        ++total_bytes_read;
+        ec.clear();
+    }
+
+    return total_bytes_read;
+}
+
+#ifdef IO_HAVE_STRING_VIEW
+template<class SyncReadStream, class DynamicBuffer>
+std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b, io_std::string_view delim)
+{
+    std::error_code ec;
+    std::size_t bytes_read = read_until(s, std::forward<DynamicBuffer>(b),
+                                        delim, ec);
+    if (ec) {
+        throw std::system_error{ec};
+    }
+    return bytes_read;
+}
+
+template<class SyncReadStream, class DynamicBuffer>
+std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
+                       io_std::string_view delim, std::error_code& ec);
+
+#endif // IO_HAVE_STRING_VIEW
+
 } // end namespace net
 } // end namespace io
 
