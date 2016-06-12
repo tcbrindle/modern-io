@@ -4,6 +4,8 @@
 #include <io/debug/debug_stream.hpp>
 #include <io/stream_reader.hpp>
 
+#include <range/v3/algorithm/copy.hpp>
+
 #include <iostream>
 
 TEST_CASE("Debug streams can be printed", "[debug]")
