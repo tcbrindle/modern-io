@@ -2,6 +2,7 @@
 add_executable(test-modern-io
     basic_test.cpp
     buffer_copy_test.cpp
+    buffered_read_stream_test.cpp
     catch_main.cpp
     debug_stream_test.cpp
     read_until_test.cpp
