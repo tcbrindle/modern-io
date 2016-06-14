@@ -1097,6 +1097,29 @@ private:
 
 // 17.5 Synchronous read operations [buffer.read]
 
+// EXTENSION -- not in Networking TS
+template <class SyncReadStream, class CompletionCondition>
+std::size_t read(SyncReadStream& stream,
+                 const mutable_buffer& buffer,
+                 CompletionCondition completion_condition,
+                 std::error_code& ec)
+{
+    ec.clear();
+
+    std::size_t total_bytes_read = 0;
+    std::size_t next_read_size = max_single_transfer_size;
+    std::size_t buf_size = buffer_size(buffer);
+
+    while (total_bytes_read < buf_size && next_read_size != 0) {
+        mutable_buffer buf = buffer + total_bytes_read;
+        total_bytes_read += stream.read_some(buf, ec);
+        next_read_size = completion_condition(ec, total_bytes_read);
+    }
+
+    return total_bytes_read;
+
+}
+
 template<class SyncReadStream, class MutableBufferSequence>
 std::size_t read(SyncReadStream& stream,
                  const MutableBufferSequence& buffers)
