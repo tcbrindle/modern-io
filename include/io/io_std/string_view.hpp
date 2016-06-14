@@ -26,4 +26,8 @@
     #endif // (__has_include(<string_view>) || __has_include(<experimental/string_view>))
 #endif // __has_include
 
+#if !IO_HAVE_STRING_VIEW
+#error "Standard library implementation does not include std::string_view or std::experimental::string_view."
+#endif // !IO_HAVE_STRING_VIEW
+
 #endif // IO_STD_STRING_VIEW_HPP

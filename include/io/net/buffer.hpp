@@ -136,10 +136,8 @@ template <class CharT, class Traits, class Allocator>
 const_buffer
 buffer(const std::basic_string<CharT, Traits, Allocator>& data) noexcept;
 
-#ifdef IO_HAVE_STRING_VIEW
 template<class CharT, class Traits>
 const_buffer buffer(io_std::basic_string_view<CharT, Traits> data) noexcept;
-#endif // IO_HAVE_STRING_VIEW
 
 template <class T, std::size_t N>
 mutable_buffer buffer(T (& data)[N], std::size_t n) noexcept;
@@ -171,11 +169,9 @@ template <class CharT, class Traits, class Allocator>
 const_buffer buffer(const std::basic_string<CharT, Traits, Allocator>& data,
                     std::size_t n) noexcept;
 
-#ifdef IO_HAVE_STRING_VIEW
 template<class CharT, class Traits>
 const_buffer buffer(io_std::basic_string_view<CharT, Traits> data,
                     std::size_t n) noexcept;
-#endif // IO_HAVE_STRING_VIEW
 
 template <class T, class Allocator>
 class dynamic_vector_buffer;
@@ -308,13 +304,13 @@ template <class SyncReadStream, class DynamicBuffer>
 std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
                        char delim, std::error_code& ec);
 
-#ifdef IO_HAVE_STRING_VIEW
 template<class SyncReadStream, class DynamicBuffer>
 std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b, io_std::string_view delim);
+
 template<class SyncReadStream, class DynamicBuffer>
 std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
                        io_std::string_view delim, std::error_code& ec);
-#endif // IO_HAVE_STRING_VIEW
+
 
 // Asynchronous delimited read operations -- NOT IMPLEMENTED
 
@@ -740,16 +736,12 @@ const_buffer buffer(const std::basic_string<CharT, Traits, Allocator>& data) noe
                   (std::end(data) - std::begin(data)) * sizeof(*std::begin(data)));
 };
 
-#ifdef IO_HAVE_STRING_VIEW
-
 template<class CharT, class Traits>
 const_buffer buffer(io_std::basic_string_view<CharT, Traits> data) noexcept
 {
     return buffer(std::begin(data) != std::end(data) ? std::addressof(*std::begin(data)) : nullptr,
                   (std::end(data) - std::begin(data)) * sizeof(*std::begin(data)));
 };
-
-#endif // IO_HAVE_STRING_VIEW
 
 template<class T, std::size_t N>
 mutable_buffer buffer(T (&data)[N], std::size_t n) noexcept
@@ -807,16 +799,12 @@ const_buffer buffer(const std::basic_string<CharT, Traits, Allocator>& data,
     return buffer(buffer(data), n);
 };
 
-#ifdef IO_HAVE_STRING_VIEW
-
 template<class CharT, class Traits>
 const_buffer buffer(io_std::basic_string_view<CharT, Traits> data,
                     size_t n) noexcept
 {
     return buffer(buffer(data), n);
 };
-
-#endif // IO_HAVE_STRING_VIEW
 
 // 16.12 Class template dynamic_vector_buffer [buffer.dynamic.vector]
 
@@ -1283,7 +1271,6 @@ std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
     return total_bytes_read;
 }
 
-#ifdef IO_HAVE_STRING_VIEW
 template<class SyncReadStream, class DynamicBuffer>
 std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b, io_std::string_view delim)
 {
@@ -1300,7 +1287,6 @@ template<class SyncReadStream, class DynamicBuffer>
 std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
                        io_std::string_view delim, std::error_code& ec);
 
-#endif // IO_HAVE_STRING_VIEW
 
 } // end namespace net
 } // end namespace io
