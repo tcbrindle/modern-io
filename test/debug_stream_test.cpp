@@ -132,6 +132,7 @@ TEST_CASE("Debug streams can be read from", "[debug_stream]")
         REQUIRE_THROWS_AS(bytes_read = io::read(d, io::dynamic_buffer(buf),
                                    io::transfer_exactly{test_string.size()}),
                           std::system_error);
+        REQUIRE(bytes_read == 0);
         REQUIRE(rng::equal(buf, test_string));
     }
 }

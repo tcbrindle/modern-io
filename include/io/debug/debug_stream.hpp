@@ -72,7 +72,7 @@ public:
                 break;
             }
 
-            std::next(first);
+            ++first;
         }
 
         return total_bytes_read;
@@ -96,7 +96,7 @@ public:
         auto bytes_read = std::distance(buf_start, buf_end);
         pos_ += bytes_read;
 
-        if (pos_ == str_.size()) {
+        if (typename std::string::size_type(pos_) == str_.size()) {
             ec = io::make_error_code(io::stream_errc::eof);
         }
 

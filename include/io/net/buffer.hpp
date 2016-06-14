@@ -350,6 +350,8 @@ class stream_error_category : public std::error_category
             return "end of file";
         case stream_errc::not_found:
             return "delimiter not found";
+        default:
+            return "unknown error";
         }
     }
 };
@@ -612,8 +614,8 @@ inline size_t buffer_size(const const_buffer& b) noexcept
 // 16.9 Function buffer_copy [buffer.copy]
 
 template<class MutableBufferSequence, class ConstBufferSequence>
-inline size_t buffer_copy(const MutableBufferSequence& dest,
-                          const ConstBufferSequence& source) noexcept
+inline size_t buffer_copy(const MutableBufferSequence& /*dest*/,
+                          const ConstBufferSequence& /*source*/) noexcept
 {
     throw std::runtime_error("function net::buffer_copy() is not yet implemented");
 };

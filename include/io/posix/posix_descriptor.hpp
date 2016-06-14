@@ -35,8 +35,12 @@ struct posix_descriptor
     ~posix_descriptor() noexcept
     {
         if (delete_) {
+#ifdef NDEBUG
+            ::close(fd_);
+#else // !NDEBUG
             int close_return = ::close(fd_);
             assert(close_return == 0);
+#endif // NDEBUG
         }
     }
 
