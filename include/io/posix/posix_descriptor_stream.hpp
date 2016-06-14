@@ -27,7 +27,7 @@ struct posix_descriptor_stream
 
     template <typename MutBufSeq,
             CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
-    std::size_t read_some(MutBufSeq&& mb)
+    std::size_t read_some(const MutBufSeq& mb)
     {
         std::error_code ec;
         auto sz = this->read_some(std::forward<MutBufSeq>(mb), ec);
@@ -39,7 +39,7 @@ struct posix_descriptor_stream
 
     template <typename MutBufSeq,
               CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
-    std::size_t read_some(MutBufSeq&& mb, std::error_code& ec) noexcept
+    std::size_t read_some(const MutBufSeq& mb, std::error_code& ec) noexcept
     {
         ec.clear();
 
