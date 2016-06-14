@@ -11,7 +11,9 @@
 
 #include <algorithm>
 #include <array>
+#include <cstring> // for std::memcpy
 #include <io/io_std/string_view.hpp>
+#include <limits>
 #include <string>
 #include <system_error>
 #include <vector>
@@ -74,6 +76,8 @@ std::size_t buffer_size(const ConstBufferSequence_& buffers) noexcept;
 
 // Buffer copy
 
+// N.B. The TS doesn't specify that these functions should be constrained,
+// but if feels like they should.
 template <class MutableBufferSequence_, class ConstBufferSequence_>
 std::size_t buffer_copy(const MutableBufferSequence_& dest,
                         const ConstBufferSequence_& source) noexcept;
@@ -609,12 +613,74 @@ inline size_t buffer_size(const const_buffer& b) noexcept
 
 // 16.9 Function buffer_copy [buffer.copy]
 
-template<class MutableBufferSequence, class ConstBufferSequence>
-inline size_t buffer_copy(const MutableBufferSequence& /*dest*/,
-                          const ConstBufferSequence& /*source*/) noexcept
+// EXTENSION: Not in Networking TS
+inline std::size_t buffer_copy(const mutable_buffer& dest,
+                               const const_buffer& source,
+                               std::size_t max_size) noexcept
 {
-    throw std::runtime_error("function net::buffer_copy() is not yet implemented");
-};
+    std::size_t bytes_to_copy =
+            std::min(std::min(source.size(), dest.size()), max_size);
+    std::memcpy(dest.data(), source.data(), bytes_to_copy);
+    return bytes_to_copy;
+}
+
+// EXTENSION: Not in Networking TS
+inline std::size_t buffer_copy(const mutable_buffer& dest,
+                               const const_buffer& source) noexcept
+{
+    return buffer_copy(dest, source, std::numeric_limits<std::size_t>::max());
+}
+
+template<class MutableBufferSequence, class ConstBufferSequence>
+size_t buffer_copy(const MutableBufferSequence& dest,
+                   const ConstBufferSequence& source) noexcept
+{
+    return buffer_copy(dest, source,
+                       std::numeric_limits<std::size_t>::max());
+}
+
+template <class MutableBufferSequence_, class ConstBufferSequence_>
+std::size_t buffer_copy(const MutableBufferSequence_& dest,
+                        const ConstBufferSequence_& source,
+                        std::size_t max_size) noexcept
+{
+    std::size_t total_bytes_copied = 0;
+
+    auto source_iter = buffer_sequence_begin(source);
+    const auto source_end = buffer_sequence_end(source);
+    std::size_t source_offset = 0;
+    auto dest_iter = buffer_sequence_begin(dest);
+    const auto dest_end = buffer_sequence_end(dest);
+    std::size_t dest_offset = 0;
+
+    while (total_bytes_copied < max_size &&
+            source_iter != source_end &&
+            dest_iter != dest_end) {
+
+        auto src = const_buffer{*source_iter} + source_offset;
+        auto dst = mutable_buffer{*dest_iter} + dest_offset;
+
+        std::size_t bytes_copied = buffer_copy(dst, src,
+                                               max_size - total_bytes_copied);
+        total_bytes_copied += bytes_copied;
+
+        if (bytes_copied == src.size()) {
+            ++source_iter;
+            source_offset = 0;
+        } else {
+            source_offset += bytes_copied;
+        }
+
+        if (bytes_copied == dst.size()) {
+            ++dest_iter;
+            dest_offset = 0;
+        } else {
+            dest_offset += bytes_copied;
+        }
+    }
+
+    return total_bytes_copied;
+}
 
 // 16.10 Buffer arithmetic [buffer.arithmetic]
 
