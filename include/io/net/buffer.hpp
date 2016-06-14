@@ -1149,23 +1149,22 @@ std::size_t read(SyncReadStream& stream,
 
 template<class SyncReadStream, class MutableBufferSequence,
         class CompletionCondition>
-std::size_t read(SyncReadStream& stream,
-                 const MutableBufferSequence& buffers,
-                 CompletionCondition completion_condition,
-                 std::error_code& ec)
+std::size_t read(SyncReadStream& /*stream*/,
+                 const MutableBufferSequence& /*buffers*/,
+                 CompletionCondition /*completion_condition*/,
+                 std::error_code& /*ec*/)
 {
-    ec.clear();
-
-    std::size_t total_bytes_read = 0;
-    std::size_t next_read_size = max_single_transfer_size;
-    std::size_t buf_size = buffer_size(buffers);
-
-    while (total_bytes_read < buf_size && next_read_size != 0) {
-        total_bytes_read += stream.read_some(buffers, ec);
-        next_read_size = completion_condition(ec, total_bytes_read);
-    }
-
-    return total_bytes_read;
+    // N.B. Implementing this function is not simple -- to match the spec it
+    // requires a custom type implementing the MutableBufferSequence
+    // requirements, which when iterated over returns a partially-filled buffer
+    // first, followed by the empty buffers from the underlying sequence.
+    // Using range-v3 would make this easier: something like
+    // rng::view::concat(rng::single<mutable_buffer>, DynamicBuffer> perhaps?
+    // But that might not be maximally efficient.
+    //
+    // Fortunately it doesn't matter much as for now we can get away with
+    // using the single-buffer overload defined above, which works correctly.
+    throw std::runtime_error{"This function is not yet implemented"};
 }
 
 template<class SyncReadStream, class DynamicBuffer, class>
