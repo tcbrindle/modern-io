@@ -1240,6 +1240,26 @@ template <class SyncReadStream, class DynamicBuffer>
 std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
                        char delim, std::error_code& ec)
 {
+    return read_until(s, std::forward<DynamicBuffer>(b),
+                      io_std::string_view{&delim, 1}, ec);
+}
+
+template<class SyncReadStream, class DynamicBuffer>
+std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b, io_std::string_view delim)
+{
+    std::error_code ec;
+    std::size_t bytes_read = read_until(s, std::forward<DynamicBuffer>(b),
+                                        delim, ec);
+    if (ec) {
+        throw std::system_error{ec};
+    }
+    return bytes_read;
+}
+
+template<class SyncReadStream, class DynamicBuffer>
+std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
+                       io_std::string_view delim, std::error_code& ec)
+{
     std::size_t total_bytes_read = 0;
     std::size_t next_read_size = max_single_transfer_size;
     bool found = false;
@@ -1250,8 +1270,10 @@ std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
         b.commit(bytes_read);
         const char* data_ptr = static_cast<const char*>(buf.data());
 
-        const char* delim_ptr = std::find(data_ptr, data_ptr + bytes_read,
-                                          delim);
+        //const char* delim_ptr = std::find(data_ptr, data_ptr + bytes_read,
+        //                                  delim);
+        const char* delim_ptr = std::search(data_ptr, data_ptr + bytes_read,
+                                            std::begin(delim), std::end(delim));
 
         if (delim_ptr != data_ptr + bytes_read) {
             found = true;
@@ -1270,22 +1292,6 @@ std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
 
     return total_bytes_read;
 }
-
-template<class SyncReadStream, class DynamicBuffer>
-std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b, io_std::string_view delim)
-{
-    std::error_code ec;
-    std::size_t bytes_read = read_until(s, std::forward<DynamicBuffer>(b),
-                                        delim, ec);
-    if (ec) {
-        throw std::system_error{ec};
-    }
-    return bytes_read;
-}
-
-template<class SyncReadStream, class DynamicBuffer>
-std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
-                       io_std::string_view delim, std::error_code& ec);
 
 
 } // end namespace net
