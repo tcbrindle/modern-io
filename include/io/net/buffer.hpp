@@ -1208,9 +1208,9 @@ std::size_t read(SyncReadStream& stream, DynamicBuffer&& b,
     while (b.size() < b.max_size()) {
         auto buf = b.prepare(next_read_size);
         std::size_t bytes_read = stream.read_some(buf, ec);
+        b.commit(bytes_read);
         total_bytes_read += bytes_read;
         next_read_size = calc_next_read_size(completion_condition(ec, total_bytes_read));
-        b.commit(bytes_read);
         if (next_read_size == 0) {
             break;
         }
