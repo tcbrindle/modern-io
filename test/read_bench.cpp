@@ -77,6 +77,12 @@ std::vector<std::uint8_t> read_modern(const char* file_name)
     return output;
 }
 
+std::vector<std::uint8_t> read_modern_range(const char* file_name)
+{
+    auto file = io::open_file(file_name);
+    return io::read(std::move(file));
+}
+
 }
 
 int main(int argc, char** argv)
@@ -107,5 +113,12 @@ int main(int argc, char** argv)
         auto v = read_modern(file_name);
         auto e = t.elapsed();
         std::cout << "modern::io read took " << e.count() << "ms\n";
+    }
+
+    {
+        auto t = timer{};
+        auto v = read_modern_range(file_name);
+        auto e = t.elapsed();
+        std::cout << "modern::io range read took " << e.count() << "ms\n";
     }
 }
