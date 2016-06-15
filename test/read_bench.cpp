@@ -9,7 +9,7 @@
 #include <io/file.hpp>
 #include <io/read.hpp>
 #include <io/stream_reader.hpp>
-
+#include <io/buffered_read_stream.hpp>
 
 namespace {
 
@@ -71,10 +71,16 @@ std::vector<std::uint8_t> read_iostream(const char* file_name)
 
 std::vector<std::uint8_t> read_modern(const char* file_name)
 {
-    auto file = io::open_file(file_name);
+    auto file = io::buffered_read_stream<io::file>(io::open_file(file_name));
     std::vector<uint8_t> output;
     io::read_all(file, io::dynamic_buffer(output));
     return output;
+}
+
+std::vector<std::uint8_t> read_modern_iter(const char* file_name)
+{
+    auto file = io::buffered_read_stream<io::file>(io::open_file(file_name));
+    return io::read(std::move(file));
 }
 
 }
@@ -107,5 +113,12 @@ int main(int argc, char** argv)
         auto v = read_modern(file_name);
         auto e = t.elapsed();
         std::cout << "modern::io read took " << e.count() << "ms\n";
+    }
+
+    {
+        auto t = timer{};
+        auto v = read_modern_iter(file_name);
+        auto e = t.elapsed();
+        std::cout << "modern::io iter read took " << e.count() << "ms\n";
     }
 }
