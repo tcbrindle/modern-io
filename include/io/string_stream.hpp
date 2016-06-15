@@ -1,6 +1,6 @@
 
-#ifndef IO_DEBUG_STREAM
-#define IO_DEBUG_STREAM
+#ifndef IO_STRING_STREAM
+#define IO_STRING_STREAM
 
 #include <io/buffer.hpp>
 #include <io/io_concepts.hpp>
@@ -12,7 +12,7 @@ namespace io {
 
 /// A debug stream which reads from and writes to an internal `std::string`.
 /// The string can be accessed using the `str()` method
-class debug_stream
+class string_stream
 {
 public:
     /// Offset type for seek operations
@@ -20,14 +20,14 @@ public:
     // use long.
     using offset_type = long;
 
-    /// Default-constructs a `debug_stream` with an empty string
-    debug_stream() = default;
+    /// Default-constructs a `string_stream` with an empty string
+    string_stream() = default;
 
-    /// Constructs a `debug_stream` with an initial string
+    /// Constructs a `string_stream` with an initial string
     /// Positions the stream pointer to the start of the string
     /// @param str String to initialise the stream with
     /// @throws std::exception if str could not be initialised
-    explicit debug_stream(std::string str)
+    explicit string_stream(std::string str)
             : str_(std::move(str))
     {}
 
@@ -202,4 +202,4 @@ private:
 
 }
 
-#endif
+#endif // IO_STREAM_STREAM_HPP

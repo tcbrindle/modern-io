@@ -1,7 +1,7 @@
 
 #include "catch.hpp"
 
-#include <io/debug/debug_stream.hpp>
+#include <io/string_stream.hpp>
 #include <io/read.hpp>
 
 const std::string test_string = "abcdefghijklmnopqrstuvwxyz";
@@ -9,7 +9,7 @@ const std::string test_string = "abcdefghijklmnopqrstuvwxyz";
 TEST_CASE("io::read_until finds a character in a string", "[read][read_until]")
 {
     std::vector<char> buf;
-    io::debug_stream d{test_string};
+    io::string_stream d{test_string};
     std::error_code ec;
     std::size_t bytes_read;
 
@@ -21,7 +21,7 @@ TEST_CASE("io::read_until finds a character in a string", "[read][read_until]")
 TEST_CASE("io::read_until finds a character in a string (throwing)", "[read][read_until]")
 {
     std::vector<char> buf;
-    io::debug_stream d{test_string};
+    io::string_stream d{test_string};
     std::size_t bytes_read = 0;
 
     REQUIRE_NOTHROW(bytes_read = io::read_until(d, io::dynamic_buffer(buf), 'e'));
@@ -31,7 +31,7 @@ TEST_CASE("io::read_until finds a character in a string (throwing)", "[read][rea
 TEST_CASE("io::read_until correctly reports a missing character", "[read][read_until]")
 {
     std::vector<char> buf;
-    io::debug_stream d{test_string};
+    io::string_stream d{test_string};
     std::error_code ec;
     std::size_t bytes_read = 0;
 
@@ -44,7 +44,7 @@ TEST_CASE("io::read_until correctly reports a missing character", "[read][read_u
 TEST_CASE("io::read_until finds a substring in a string", "[read][read_until]")
 {
     std::vector<char> buf;
-    io::debug_stream d{test_string};
+    io::string_stream d{test_string};
     std::error_code ec;
     std::size_t bytes_read;
 
@@ -56,7 +56,7 @@ TEST_CASE("io::read_until finds a substring in a string", "[read][read_until]")
 TEST_CASE("io::read_until finds a substring in a string (throwing)", "[read][read_until]")
 {
     std::vector<char> buf;
-    io::debug_stream d{test_string};
+    io::string_stream d{test_string};
     std::size_t bytes_read = 0;
 
     REQUIRE_NOTHROW(bytes_read = io::read_until(d, io::dynamic_buffer(buf), "ef"));
@@ -66,7 +66,7 @@ TEST_CASE("io::read_until finds a substring in a string (throwing)", "[read][rea
 TEST_CASE("io::read_until correctly reports a missing substring", "[read][read_until]")
 {
     std::vector<char> buf;
-    io::debug_stream d{test_string};
+    io::string_stream d{test_string};
     std::error_code ec;
     std::size_t bytes_read = 0;
 

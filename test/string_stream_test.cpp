@@ -1,7 +1,7 @@
 
 #include "catch.hpp"
 
-#include <io/debug/debug_stream.hpp>
+#include <io/string_stream.hpp>
 #include <io/stream_reader.hpp>
 
 #include <range/v3/algorithm.hpp>
@@ -14,30 +14,30 @@ namespace rng = ranges::v3;
 
 const std::string test_string = "The quick brown fox jumped over the lazy dog";
 
-static_assert(io::SyncReadStream<io::debug_stream>(),
-              "debug_stream does not meet the SyncReadStream requirements");
-static_assert(io::SyncWriteStream<io::debug_stream>(),
-              "debug_stream does not meet the SyncWriteStream requirements");
-static_assert(io::SeekableStream<io::debug_stream>(),
-              "debug_stream does not meet the SeekableStream requirements");
+static_assert(io::SyncReadStream<io::string_stream>(),
+              "string_stream does not meet the SyncReadStream requirements");
+static_assert(io::SyncWriteStream<io::string_stream>(),
+              "string_stream does not meet the SyncWriteStream requirements");
+static_assert(io::SeekableStream<io::string_stream>(),
+              "string_stream does not meet the SeekableStream requirements");
 
-TEST_CASE("Debug streams can be default constructed", "[debug_stream]")
+TEST_CASE("String streams can be default constructed", "[string_stream]")
 {
-    const io::debug_stream d{};
+    const io::string_stream d{};
     REQUIRE(d.str() == "");
     REQUIRE(d.get_position() == 0);
 }
 
-TEST_CASE("Debug streams can be value constructed", "[debug_stream]")
+TEST_CASE("String streams can be value constructed", "[string_stream]")
 {
-    const io::debug_stream d{test_string};
+    const io::string_stream d{test_string};
     REQUIRE(d.str() == test_string);
     REQUIRE(d.get_position() == 0);
 }
 
-TEST_CASE("Debug streams support seeking", "[debug_stream]")
+TEST_CASE("String streams support seeking", "[string_stream]")
 {
-    io::debug_stream d{test_string};
+    io::string_stream d{test_string};
 
     SECTION("...from start") {
         REQUIRE_NOTHROW(d.seek(10, io::seek_mode::start));
@@ -60,9 +60,9 @@ TEST_CASE("Debug streams support seeking", "[debug_stream]")
     }
 }
 
-TEST_CASE("Debug streams can be read from", "[debug_stream]")
+TEST_CASE("String streams can be read from", "[string_stream]")
 {
-    io::debug_stream d{test_string};
+    io::string_stream d{test_string};
 
     SECTION("...using a short static buffer") {
         constexpr int buf_size = 10;
@@ -137,9 +137,9 @@ TEST_CASE("Debug streams can be read from", "[debug_stream]")
     }
 }
 
-TEST_CASE("Debug streams can be written to", "[debug_stream]")
+TEST_CASE("String streams can be written to", "[string_stream]")
 {
-    io::debug_stream d{};
+    io::string_stream d{};
 
     SECTION("Using a static buffer") {
         std::error_code ec{};
