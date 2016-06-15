@@ -12,7 +12,7 @@
 
 namespace io {
 
-using file = posix_file;
+using file = posix::file;
 
 inline file open_file(const char* path, std::error_code& ec) noexcept
 {

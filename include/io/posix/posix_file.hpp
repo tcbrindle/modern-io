@@ -7,6 +7,7 @@
 #include <fcntl.h>
 
 namespace io {
+namespace posix {
 
 namespace detail {
 constexpr int seek_mode_to_whence_arg(seek_mode m)
@@ -24,28 +25,27 @@ constexpr int seek_mode_to_whence_arg(seek_mode m)
 } // end namespace detail
 
 
-struct posix_file : posix_descriptor_stream {
+struct file : descriptor_stream {
     using offset_type = ::off_t;
 
-    static posix_file open(const char* path, std::error_code& ec) noexcept
+    static file open(const char* path, std::error_code& ec) noexcept
     {
         ec.clear();
         errno = 0;
-        posix_descriptor fd{::open(path, O_RDWR | O_CREAT, 0600), true};
+        descriptor fd{::open(path, O_RDWR | O_CREAT, 0600), true};
 
         if (fd.get() < 0) {
             ec.assign(errno, std::system_category());
-            return posix_file{};
+            return posix::file{};
         }
 
-        return posix_file{std::move(fd)};
+        return posix::file{std::move(fd)};
     }
 
-    posix_file() = default;
+    file() = default;
 
-    explicit posix_file(posix_descriptor fd) noexcept
-            : posix_descriptor_stream{std::move(fd)}
-    {}
+    explicit file(posix::descriptor fd) noexcept
+            : descriptor_stream{std::move(fd)} {}
 
     offset_type seek(offset_type offset, seek_mode from)
     {
@@ -57,12 +57,13 @@ struct posix_file : posix_descriptor_stream {
         return o;
     }
 
-    offset_type seek(offset_type offset, seek_mode from, std::error_code& ec) noexcept
+    offset_type
+    seek(offset_type offset, seek_mode from, std::error_code& ec) noexcept
     {
         ec.clear();
         errno = 0;
         auto o = ::lseek(native_handle(), static_cast<off_t>(offset),
-                         io::detail::seek_mode_to_whence_arg(from));
+                         detail::seek_mode_to_whence_arg(from));
 
         if (o < 0) {
             ec.assign(errno, std::system_category());
@@ -90,9 +91,11 @@ struct posix_file : posix_descriptor_stream {
     }
 };
 
-static_assert(SeekableStream<posix_file>(), "posix_file does not meet the SeekableStream requirements");
+static_assert(SeekableStream<posix::file>(),
+              "posix::file does not meet the SeekableStream requirements");
 
-}
+} // end namespace posix
+} // end namespace io
 
 #endif // IO_POSIX_FILE_HPP
 

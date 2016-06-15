@@ -7,24 +7,22 @@
 #include <cassert>
 
 namespace io {
+namespace posix {
 
 /// Move-only RAII wrapper around a Posix file descriptor
-struct posix_descriptor
-{
+struct descriptor {
     /// Default-construct an invalid file descriptor
-    posix_descriptor() = default;
+    descriptor() = default;
 
     /// Create a `posix_descriptor` wrapping `fd`, optionally taking ownership
     /// @param fd The file descriptor
     /// @param transfer_ownership Whether to take ownership of the file descriptor
-    explicit posix_descriptor(int fd, bool transfer_ownership = true) noexcept
-            : fd_(fd), delete_(transfer_ownership)
-    {}
+    explicit descriptor(int fd, bool transfer_ownership = true) noexcept
+            : fd_(fd), delete_(transfer_ownership) {}
 
     /// Move-construct from another posix_descriptor, taking ownership
-    posix_descriptor(posix_descriptor&& other) noexcept
-            : fd_(other.fd_),
-              delete_(other.delete_)
+    descriptor(descriptor&& other) noexcept
+        : fd_(other.fd_), delete_(other.delete_)
     {
         other.fd_ = -1;
         other.delete_ = false;
@@ -32,7 +30,7 @@ struct posix_descriptor
 
     /// Destroy the posix_descriptor
     /// If the underlying fd is owned, this will call ::close()
-    ~posix_descriptor() noexcept
+    ~descriptor() noexcept
     {
         if (delete_) {
 #ifdef NDEBUG
@@ -52,6 +50,7 @@ private:
     bool delete_ = false;
 };
 
-}
+} // end namespace posix
+} // end namespace io
 
 #endif // IO_POSIX_DESCRIPTOR_HPP

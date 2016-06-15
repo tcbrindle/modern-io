@@ -10,16 +10,15 @@
 #include <unistd.h>
 
 namespace io {
+namespace posix {
 
-struct posix_descriptor_stream
-{
+struct descriptor_stream {
     using native_handle_type = int;
 
-    posix_descriptor_stream() noexcept = default;
+    descriptor_stream() noexcept = default;
 
-    posix_descriptor_stream(posix_descriptor fd) noexcept
-            : fd_{std::move(fd)}
-    {}
+    descriptor_stream(descriptor fd) noexcept
+            : fd_{std::move(fd)} {}
 
     native_handle_type native_handle() const noexcept { return fd_.get(); }
 
@@ -38,7 +37,7 @@ struct posix_descriptor_stream
     }
 
     template <typename MutBufSeq,
-              CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
+            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
     std::size_t read_some(const MutBufSeq& mb, std::error_code& ec) noexcept
     {
         ec.clear();
@@ -65,9 +64,11 @@ struct posix_descriptor_stream
 
         if (bytes == 0) {
             ec = make_error_code(stream_errc::eof);
-        } else if (bytes < 0) {
+        }
+        else if (bytes < 0) {
             ec.assign(errno, std::system_category());
-        } else {
+        }
+        else {
             ec.clear();
         }
 
@@ -86,7 +87,8 @@ struct posix_descriptor_stream
 
         if (bytes_read == 0) {
             ec = io::make_error_code(stream_errc::eof);
-        } else if (bytes_read < 0) {
+        }
+        else if (bytes_read < 0) {
             ec.assign(errno, std::system_category());
         }
 
@@ -96,7 +98,7 @@ struct posix_descriptor_stream
     // SyncWriteStream implementation
 
     template <typename ConstBufSeq,
-              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
     std::size_t write_some(ConstBufSeq& cb)
     {
         std::error_code ec;
@@ -110,7 +112,7 @@ struct posix_descriptor_stream
     }
 
     template <typename ConstBufSeq,
-              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
     std::size_t write_some(ConstBufSeq& cb, std::error_code& ec) noexcept
     {
         if (io::buffer_size(cb) == 0) {
@@ -162,12 +164,13 @@ private:
     template <typename MutBufSeq>
     std::size_t do_read_some(MutBufSeq&& mb, std::error_code& ec) noexcept;
 
-    posix_descriptor fd_{};
+    descriptor fd_{};
 };
 
-static_assert(SyncReadStream<posix_descriptor_stream>(),
+static_assert(SyncReadStream<descriptor_stream>(),
               "posix_descriptor_stream does not meet the SyncReadStream requirements");
 
-}
+} // end namespace posix
+} // end namespace io
 
 #endif // IO_POSIX_DESCRIPTOR_STREAM_HPP
