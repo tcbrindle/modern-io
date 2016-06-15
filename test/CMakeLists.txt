@@ -5,6 +5,7 @@ add_executable(test-modern-io
     catch_main.cpp
     read_until_test.cpp
     string_stream_test.cpp
+    string_view_stream_test.cpp
     )
 
 add_dependencies(test-modern-io range-v3)
