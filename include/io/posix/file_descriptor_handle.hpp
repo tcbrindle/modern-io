@@ -9,28 +9,28 @@
 namespace io {
 namespace posix {
 
-/// Move-only RAII wrapper around a Posix file descriptor
-struct descriptor {
-    /// Default-construct an invalid file descriptor
-    descriptor() = default;
+/// Move-only RAII wrapper around a Posix file file_descriptor_handle
+struct file_descriptor_handle {
+    /// Default-construct an invalid file file_descriptor_handle
+    file_descriptor_handle() = default;
 
-    /// Create a `posix_descriptor` wrapping `fd`, optionally taking ownership
+    /// Create a `file_descriptor_handle` wrapping `fd`, optionally taking ownership
     /// @param fd The file descriptor
     /// @param transfer_ownership Whether to take ownership of the file descriptor
-    explicit descriptor(int fd, bool transfer_ownership = true) noexcept
+    explicit file_descriptor_handle(int fd, bool transfer_ownership = true) noexcept
             : fd_(fd), delete_(transfer_ownership) {}
 
-    /// Move-construct from another posix_descriptor, taking ownership
-    descriptor(descriptor&& other) noexcept
+    /// Move-construct from another `file_descriptor_handle`, taking ownership
+    file_descriptor_handle(file_descriptor_handle&& other) noexcept
         : fd_(other.fd_), delete_(other.delete_)
     {
         other.fd_ = -1;
         other.delete_ = false;
     }
 
-    /// Destroy the posix_descriptor
+    /// Destroy the `file_descriptor_handle`
     /// If the underlying fd is owned, this will call ::close()
-    ~descriptor() noexcept
+    ~file_descriptor_handle() noexcept
     {
         if (delete_) {
 #ifdef NDEBUG

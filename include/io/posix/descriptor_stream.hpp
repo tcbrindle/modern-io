@@ -3,7 +3,7 @@
 #define IO_POSIX_DESCRIPTOR_STREAM_HPP
 
 #include <io/buffer.hpp>
-#include <io/posix/descriptor.hpp>
+#include <io/posix/file_descriptor_handle.hpp>
 
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -17,7 +17,7 @@ struct descriptor_stream {
 
     descriptor_stream() noexcept = default;
 
-    descriptor_stream(descriptor fd) noexcept
+    descriptor_stream(file_descriptor_handle fd) noexcept
             : fd_{std::move(fd)} {}
 
     native_handle_type native_handle() const noexcept { return fd_.get(); }
@@ -164,7 +164,7 @@ private:
     template <typename MutBufSeq>
     std::size_t do_read_some(MutBufSeq&& mb, std::error_code& ec) noexcept;
 
-    descriptor fd_{};
+    file_descriptor_handle fd_{};
 };
 
 static_assert(SyncReadStream<descriptor_stream>(),

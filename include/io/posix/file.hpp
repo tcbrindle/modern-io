@@ -32,7 +32,7 @@ struct file : descriptor_stream {
     {
         ec.clear();
         errno = 0;
-        descriptor fd{::open(path, O_RDWR | O_CREAT, 0600), true};
+        file_descriptor_handle fd{::open(path, O_RDWR | O_CREAT, 0600), true};
 
         if (fd.get() < 0) {
             ec.assign(errno, std::system_category());
@@ -44,7 +44,7 @@ struct file : descriptor_stream {
 
     file() = default;
 
-    explicit file(posix::descriptor fd) noexcept
+    explicit file(posix::file_descriptor_handle fd) noexcept
             : descriptor_stream{std::move(fd)} {}
 
     offset_type seek(offset_type offset, seek_mode from)
