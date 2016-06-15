@@ -2,7 +2,7 @@
 #ifndef IO_POSIX_FILE_HPP
 #define IO_POSIX_FILE_HPP
 
-#include <io/posix/posix_descriptor_stream.hpp>
+#include <io/posix/descriptor_stream.hpp>
 
 #include <fcntl.h>
 

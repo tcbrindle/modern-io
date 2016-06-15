@@ -8,7 +8,7 @@
 
 #include <io/io_concepts.hpp>
 #include <io/seek.hpp>
-#include <io/posix/posix_file.hpp>
+#include <io/posix/file.hpp>
 
 namespace io {
 

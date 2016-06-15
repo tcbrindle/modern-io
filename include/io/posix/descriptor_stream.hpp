@@ -3,7 +3,7 @@
 #define IO_POSIX_DESCRIPTOR_STREAM_HPP
 
 #include <io/buffer.hpp>
-#include <io/posix/posix_descriptor.hpp>
+#include <io/posix/descriptor.hpp>
 
 #include <sys/types.h>
 #include <sys/uio.h>
