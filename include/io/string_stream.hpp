@@ -132,7 +132,9 @@ public:
         auto last = io::buffer_sequence_end(cb);
 
         while (first != last) {
-            total_bytes_written += write_some(*first, ec);
+            str_.insert(pos_, reinterpret_cast<const char*>(first->data()), first->size());
+            total_bytes_written += first->size();
+            pos_ += first->size();
             if (ec) {
                 break;
             }
