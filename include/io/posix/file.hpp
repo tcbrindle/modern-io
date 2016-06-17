@@ -20,6 +20,8 @@ constexpr int seek_mode_to_whence_arg(seek_mode m)
         return SEEK_END;
     case seek_mode::current:
         return SEEK_CUR;
+    default:
+        return -1;
     }
 }
 
