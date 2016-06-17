@@ -276,7 +276,7 @@ int main(int argc, char** argv)
 
     // A good heuristic for meaningful results seems to be to make the fastest
     // tests take ~2 seconds
-    auto n_times = std::max(std::chrono::seconds{2}/reference_time, 1ll);
+    auto n_times = std::max<long>(std::chrono::seconds{2}/reference_time, 1);
 
     std::cout << "Performing " << n_times << " read(s) of "
               << file_name << " (" << file_size << " bytes, "
