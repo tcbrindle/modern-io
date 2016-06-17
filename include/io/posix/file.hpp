@@ -2,6 +2,7 @@
 #ifndef IO_POSIX_FILE_HPP
 #define IO_POSIX_FILE_HPP
 
+#include <io/io_std/filesystem.hpp>
 #include <io/posix/descriptor_stream.hpp>
 
 #include <fcntl.h>
@@ -28,11 +29,11 @@ constexpr int seek_mode_to_whence_arg(seek_mode m)
 struct file : descriptor_stream {
     using offset_type = ::off_t;
 
-    static file open(const char* path, std::error_code& ec) noexcept
+    static file open(const io_std::filesystem::path& path, std::error_code& ec) noexcept
     {
         ec.clear();
         errno = 0;
-        file_descriptor_handle fd{::open(path, O_RDWR | O_CREAT, 0600), true};
+        file_descriptor_handle fd{::open(path.c_str(), O_RDWR | O_CREAT, 0600), true};
 
         if (fd.get() < 0) {
             ec.assign(errno, std::system_category());

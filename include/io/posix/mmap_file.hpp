@@ -71,7 +71,7 @@ class mmap_file {
 public:
     using offset_type = ::off_t;
 
-    static mmap_file open(const char* path)
+    static mmap_file open(const io_std::filesystem::path& path)
     {
         std::error_code ec;
         auto file = mmap_file::open(path, ec);
@@ -81,13 +81,15 @@ public:
         return file;
     }
 
-    static mmap_file open(const char* path, std::error_code& ec)
+    static mmap_file open(const io_std::filesystem::path& path,
+                          std::error_code& ec)
     {
         ec.clear();
         errno = 0;
 
         // First, try to open the file
-        file_descriptor_handle fd{::open(path, O_RDWR | O_CREAT, 0600), true};
+        file_descriptor_handle fd{::open(path.c_str(), O_RDWR | O_CREAT, 0600),
+                                  true};
         if (fd.get() < 0) {
             ec.assign(errno, std::system_category());
             return mmap_file{};
