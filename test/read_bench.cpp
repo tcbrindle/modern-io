@@ -1,6 +1,7 @@
 
 #include <cerrno>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <iostream>
 #include <fstream>
@@ -11,6 +12,7 @@
 #include <io/stream_reader.hpp>
 #include <io/posix/mmap_file.hpp>
 
+#include <range/v3/algorithm/copy.hpp>
 
 namespace {
 
@@ -29,9 +31,17 @@ private:
     clock_type::time_point start_ = clock_type::now();
 };
 
-std::vector<std::uint8_t> read_stdio(const char* file_name)
+/*
+ * stdio tests
+ */
+
+// Incrementally reads from a FILE*, with (hopefully) good error checking
+std::vector<std::uint8_t> read_stdio_inc(const char* file_name)
 {
     FILE* file = std::fopen(file_name, "rb");
+    if (!file) {
+        throw std::system_error{errno, std::system_category()};
+    }
     constexpr std::size_t read_size = 65'536;
     std::vector<uint8_t> output{};
     std::size_t total_read_size = 0;
@@ -60,7 +70,57 @@ std::vector<std::uint8_t> read_stdio(const char* file_name)
     return output;
 }
 
-std::vector<std::uint8_t> read_iostream(const char* file_name)
+// Read from a FILE* into a preallocated vector with good error checking
+std::vector<std::uint8_t> read_stdio_prealloc(const char* file_name)
+{
+    FILE* file = std::fopen(file_name, "rb");
+    if (!file) {
+        throw std::system_error{errno, std::system_category()};
+    }
+    // Seek to the end of the stream to find the size
+    if (std::fseek(file, 0, SEEK_END) != 0) {
+        std::fclose(file);
+        throw std::system_error{errno, std::system_category()};
+    }
+    std::size_t file_size = std::ftell(file);
+    std::rewind(file);
+
+    std::vector<std::uint8_t> output(file_size);
+    std::size_t bytes_read = std::fread(output.data(), 1, file_size, file);
+
+    if (bytes_read != file_size) {
+        std::fclose(file);
+        throw std::system_error{errno, std::system_category()};
+    }
+
+    std::fclose(file);
+
+    return output;
+}
+
+/*
+ * iostreams tests
+ */
+
+// Read from an ifstream into a preallocated vector with exceptions enabled
+std::vector<std::uint8_t> read_iostream_prealloc(const char* file_name)
+{
+    std::ifstream file{};
+    file.exceptions(std::ios::badbit);
+    file.open(file_name, std::ios_base::binary);
+
+    file.seekg(0, std::ios_base::end);
+    auto file_size = file.tellg();
+    file.seekg(0);
+    std::vector<std::uint8_t> output(file_size);
+
+    file.read(reinterpret_cast<char*>(output.data()), file_size);
+
+    return output;
+}
+
+// Read from an ifstream into a vector using istreambuf_iterator
+std::vector<std::uint8_t> read_iostream_range(const char* file_name)
 {
     std::ifstream file{};
     file.exceptions(std::ios::badbit);
@@ -70,7 +130,34 @@ std::vector<std::uint8_t> read_iostream(const char* file_name)
                                 std::istreambuf_iterator<char>());
 }
 
-std::vector<std::uint8_t> read_modern(const char* file_name)
+// Read from an ifstream into a preallocated vector using istreambuf iterator
+std::vector<std::uint8_t> read_iostream_range_prealloc(const char* file_name)
+{
+    std::ifstream file{};
+    file.exceptions(std::ios::badbit);
+    file.open(file_name, std::ios_base::binary);
+
+    file.seekg(0, std::ios_base::end);
+    auto file_size = file.tellg();
+    file.seekg(0);
+
+    std::vector<std::uint8_t> output;
+    output.reserve(file_size);
+
+    std::copy(std::istreambuf_iterator<char>(file),
+              std::istreambuf_iterator<char>(),
+              std::back_inserter(output));
+
+    return output;
+}
+
+
+/*
+ * modern::io file tests
+ */
+
+// Incrementally reads from a file, with good error checking behind the scenes
+std::vector<std::uint8_t> read_modern_inc(const char* file_name)
 {
     auto file = io::open_file(file_name);
     std::vector<uint8_t> output;
@@ -78,27 +165,72 @@ std::vector<std::uint8_t> read_modern(const char* file_name)
     return output;
 }
 
+
+// Read a file into a preallocated vector with exceptions
+std::vector<std::uint8_t> read_modern_prealloc(const char* file_name)
+{
+    auto file = io::open_file(file_name);
+    auto file_size = io::seek(file, 0, io::seek_mode::end);
+    io::seek(file, 0, io::seek_mode::start);
+    std::vector<std::uint8_t> output(file_size);
+    io::read(file, io::buffer(output));
+    return output;
+}
+
+// Read a file into a vector using a stream reader (in two lines!)
 std::vector<std::uint8_t> read_modern_range(const char* file_name)
 {
     auto file = io::open_file(file_name);
     return io::read(std::move(file));
 }
 
-std::vector<std::uint8_t> read_modern_mmap(const char* file_name)
+// Read a file into a preallocated vector using a stream reader
+std::vector<std::uint8_t> read_modern_range_prealloc(const char* file_name)
 {
-    auto file = io::posix::mmap_file::open(file_name);
-    std::vector<uint8_t> output;
-    io::read_all(file, io::dynamic_buffer(output));
+    auto file = io::open_file(file_name);
+    auto file_size = io::seek(file, 0, io::seek_mode::end);
+    io::seek(file, 0, io::seek_mode::start);
+    std::vector<std::uint8_t> output;
+    output.reserve(file_size);
+
+    auto reader = io::read(std::move(file));
+
+    io::rng::copy(reader, io::rng::back_inserter(output));
+
     return output;
 }
 
+/*
+ * modern::io mmap tests
+ */
+
+// Read an mmap'd file into a preallocated vector with exceptions
+std::vector<std::uint8_t> read_modern_mmap_prealloc(const char* file_name)
+{
+    auto file = io::posix::mmap_file::open(file_name);
+    std::vector<uint8_t> output(file.data().size());
+    io::read(file, io::buffer(output));
+    return output;
+}
+
+// Read an mmap'd file into a vector using a stream reader
 std::vector<std::uint8_t> read_modern_mmap_range(const char* file_name)
 {
     auto file = io::posix::mmap_file::open(file_name);
     return io::read(std::move(file));
 }
 
+// Read an mmap'd fine into a preallocated vector using a stream reader
+std::vector<std::uint8_t> read_modern_mmap_range_prealloc(const char* file_name)
+{
+    auto file = io::posix::mmap_file::open(file_name);
+    std::vector<std::uint8_t> output;
+    output.reserve(file.data().size());
+    io::rng::copy(io::read(std::move(file)), io::rng::back_inserter(output));
+    return output;
 }
+
+} // end anonymous namespace
 
 int main(int argc, char** argv)
 {
@@ -108,46 +240,62 @@ int main(int argc, char** argv)
     }
 
     auto file_name = argv[1];
+    const bool check = argc > 2 && argv[2] == std::string("check");
 
+    using test_entry = std::pair<std::string, std::vector<std::uint8_t>(*)(const char*)>;
+    const std::vector<test_entry> tests {
+            { "stdio incremental read", read_stdio_inc },
+            { "modern::io incremental read", read_modern_inc },
+            { "stdio preallocated read", read_stdio_prealloc },
+            { "iostream preallocated read", read_iostream_prealloc },
+            { "modern::io preallocated read", read_modern_prealloc },
+            { "modern::io preallocated mmap read", read_modern_mmap_prealloc },
+            { "iostream incremental range read", read_iostream_range },
+            { "modern::io incremental range read", read_modern_range },
+            { "modern::io incremental mmap range read", read_modern_mmap_range },
+            { "iostream preallocated range read", read_iostream_range_prealloc },
+            { "modern::io preallocated range read", read_modern_range_prealloc },
+            { "modern::io preallocated mmap range read", read_modern_mmap_range_prealloc },
+    };
+
+    std::chrono::microseconds reference_time;
+    std::size_t file_size = 0;
+
+    std::vector<uint8_t> reference;
     {
-        auto t = timer{};
-        auto v = read_stdio(file_name);
-        auto e = t.elapsed();
-        std::cout << "stdio read took " << e.count() << "ms\n";
+        std::cout << "warming cache and checking disk speed... " << std::flush;
+        timer t{};
+        auto v = read_stdio_inc(file_name);
+        reference_time = t.elapsed<std::chrono::microseconds>();
+        file_size = v.size();
+        if (check) {
+            reference = std::move(v);
+        }
+        std::cout << "done\n";
     }
 
-    {
-        auto t = timer{};
-        auto v = read_iostream(file_name);
-        auto e = t.elapsed();
-        std::cout << "ifstream read took " << e.count() << "ms\n";
-    }
+    // A good heuristic for meaningful results seems to be to make the fastest
+    // tests take ~2 seconds
+    auto n_times = std::max(std::chrono::seconds{2}/reference_time, 1ll);
 
-    {
-        auto t = timer{};
-        auto v = read_modern(file_name);
-        auto e = t.elapsed();
-        std::cout << "modern::io read took " << e.count() << "ms\n";
-    }
+    std::cout << "Performing " << n_times << " read(s) of "
+              << file_name << " (" << file_size << " bytes, "
+              << file_size * n_times << " total) per test" << std::endl;
 
-    {
-        auto t = timer{};
-        auto v = read_modern_range(file_name);
-        auto e = t.elapsed();
-        std::cout << "modern::io range read took " << e.count() << "ms\n";
-    }
-
-    {
-        auto t = timer{};
-        auto v = read_modern_mmap(file_name);
-        auto e = t.elapsed();
-        std::cout << "modern::io mmap read took " << e.count() << "ms\n";
-    }
-
-    {
-        auto t = timer{};
-        auto v = read_modern_mmap_range(file_name);
-        auto e = t.elapsed();
-        std::cout << "modern::io mmap range read took " << e.count() << "ms\n";
+    for (const auto& test : tests) {
+        std::cout << test.first << " ";
+        try {
+            auto t = timer{};
+            for (int i = 0; i < n_times; i++) {
+                volatile auto v = test.second(file_name);
+            }
+            auto e = t.elapsed();
+            //if (check && v != reference) {
+            //    throw std::runtime_error{"read does not match reference output"};
+            //}
+            std::cout << "took " << e.count() << "ms\n";
+        } catch (const std::exception& e){
+            std::cout << "-- ERROR " << e.what() << "\n";
+        }
     }
 }
