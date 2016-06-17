@@ -6,6 +6,8 @@
 
 #include <sys/mman.h>
 
+#include <cassert>
+
 namespace io {
 namespace posix {
 
@@ -136,11 +138,15 @@ public:
             CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
     std::size_t read_some(const MutBufSeq& mb, std::error_code& ec)
     {
-        std::size_t bytes_copied = buffer_copy(mb, data());
-        pos_ += bytes_copied;
         if (pos_ == mmap_.size()) {
             ec = make_error_code(stream_errc::eof);
+            return 0;
         }
+
+        std::size_t bytes_copied = buffer_copy(mb, data());
+        pos_ += bytes_copied;
+
+        assert(pos_ <= mmap_.size());
 
         return bytes_copied;
     }
