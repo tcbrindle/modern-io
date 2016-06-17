@@ -293,7 +293,8 @@ int main(int argc, char** argv)
             //if (check && v != reference) {
             //    throw std::runtime_error{"read does not match reference output"};
             //}
-            std::cout << "took " << e.count() << "ms\n";
+            std::cout << "took " << e.count() << "ms ("
+                      << n_times * file_size/(1000.0 * e.count()) << "MB/s)\n";
         } catch (const std::exception& e){
             std::cout << "-- ERROR " << e.what() << "\n";
         }

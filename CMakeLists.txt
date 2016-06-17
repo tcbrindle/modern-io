@@ -16,7 +16,9 @@ endif()
 include_directories(include)
 
 add_subdirectory(external)
+add_subdirectory(benchmark)
 add_subdirectory(test)
+
 
 
 
