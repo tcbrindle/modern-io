@@ -29,7 +29,7 @@ struct descriptor_stream {
     std::size_t read_some(const MutBufSeq& mb)
     {
         std::error_code ec;
-        auto sz = this->read_some(std::forward<MutBufSeq>(mb), ec);
+        auto sz = this->read_some(mb, ec);
         if (ec) {
             throw std::system_error{ec};
         }
