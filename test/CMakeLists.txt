@@ -19,3 +19,4 @@ add_executable(read-bench read_bench.cpp)
 
 add_dependencies(read-bench range-v3)
 target_include_directories(read-bench PRIVATE ${RANGE_INCLUDE_DIR})
+target_link_libraries(read-bench ${MODERN_IO_FILESYSTEM_LIBRARY})

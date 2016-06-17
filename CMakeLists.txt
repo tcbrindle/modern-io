@@ -10,7 +10,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror")
 
 # g++ (currently?) requires us to link to the filesystem library separately
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lstdc++fs")
+    set(MODERN_IO_FILESYSTEM_LIBRARY stdc++fs)
 endif()
 
 include_directories(include)
