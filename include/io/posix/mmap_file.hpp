@@ -15,7 +15,7 @@ namespace detail {
 
 struct mmap_handle {
 
-    static mmap_handle create(file_descriptor_handle fd, ::off_t size,
+    static mmap_handle create(const file_descriptor_handle& fd, ::off_t size,
                               std::error_code& ec)
     {
         ec.clear();
@@ -29,7 +29,7 @@ struct mmap_handle {
             return mmap_handle{};
         }
 
-        return mmap_handle(std::move(fd), addr, size);
+        return mmap_handle(addr, size);
     }
 
     mmap_handle() = default;
@@ -47,7 +47,7 @@ struct mmap_handle {
     }
 
     mmap_handle(mmap_handle&& other)
-            : fd_(std::move(other.fd_)), addr_(other.addr_), size_(other.size_)
+            : addr_(other.addr_), size_(other.size_)
     {
         other.addr_ = nullptr;
         other.size_ = 0;
@@ -59,10 +59,9 @@ struct mmap_handle {
 
 private:
 
-    mmap_handle(file_descriptor_handle fd, void* addr, ::off_t size)
-            : fd_(std::move(fd)), addr_(addr), size_(size) {}
+    mmap_handle(void* addr, ::off_t size)
+            : addr_(addr), size_(size) {}
 
-    file_descriptor_handle fd_;
     void* addr_ = nullptr;
     ::off_t size_ = 0;
 };
@@ -104,7 +103,7 @@ public:
             return mmap_file{};
         }
 
-        auto mmap = detail::mmap_handle::create(std::move(fd), size, ec);
+        auto mmap = detail::mmap_handle::create(fd, size, ec);
         if (ec) {
             return mmap_file{};
         }
