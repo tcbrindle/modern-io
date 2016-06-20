@@ -1374,7 +1374,7 @@ std::size_t read_until(SyncReadStream& s, DynamicBuffer&& b,
     }
 
     if (!found) {
-        ec = make_error_code(stream_errc::not_found);
+        ec = stream_errc::not_found;
     } else {
         // Hack hack hack!
         ++total_bytes_read;

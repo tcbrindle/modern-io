@@ -38,7 +38,7 @@ TEST_CASE("io::read_until correctly reports a missing character", "[read][read_u
     REQUIRE_NOTHROW(bytes_read = io::read_until(d, io::dynamic_buffer(buf), '1', ec));
     REQUIRE(bytes_read == test_string.size());
     REQUIRE(ec.category() == io::stream_category());
-    REQUIRE(ec.value() == static_cast<int>(io::stream_errc::not_found));
+    REQUIRE(ec == io::stream_errc::not_found);
 }
 
 TEST_CASE("io::read_until finds a substring in a string", "[read][read_until]")
@@ -73,5 +73,5 @@ TEST_CASE("io::read_until correctly reports a missing substring", "[read][read_u
     REQUIRE_NOTHROW(bytes_read = io::read_until(d, io::dynamic_buffer(buf), "12", ec));
     REQUIRE(bytes_read == test_string.size());
     REQUIRE(ec.category() == io::stream_category());
-    REQUIRE(ec.value() == static_cast<int>(io::stream_errc::not_found));
+    REQUIRE(ec == io::stream_errc::not_found);
 }

@@ -63,7 +63,7 @@ struct descriptor_stream {
         auto bytes = ::readv(native_handle(), io_vecs.data(), i);
 
         if (bytes == 0) {
-            ec = make_error_code(stream_errc::eof);
+            ec = stream_errc::eof;
         }
         else if (bytes < 0) {
             ec.assign(errno, std::system_category());
@@ -86,7 +86,7 @@ struct descriptor_stream {
         auto bytes_read = ::read(native_handle(), mb.data(), mb.size());
 
         if (bytes_read == 0) {
-            ec = io::make_error_code(stream_errc::eof);
+            ec = stream_errc::eof;
         }
         else if (bytes_read < 0) {
             ec.assign(errno, std::system_category());

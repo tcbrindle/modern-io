@@ -95,7 +95,7 @@ TEST_CASE("String streams can be read from", "[string_stream]")
         std::error_code ec{};
         std::size_t bytes_read = 0;
         REQUIRE_NOTHROW(bytes_read = d.read_some(io::buffer(buf), ec));
-        REQUIRE(ec.value() == static_cast<int>(io::stream_errc::eof));
+        REQUIRE(ec == io::stream_errc::eof);
         REQUIRE(ec.category() == io::stream_category());
         REQUIRE(bytes_read == test_string.size());
         REQUIRE(rng::equal(std::begin(buf),

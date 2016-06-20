@@ -14,7 +14,7 @@ template <class SyncReadStream, class DynamicBuffer,
 std::size_t read_all(SyncReadStream& stream, DynamicBuffer&& b, std::error_code& ec)
 {
     std::size_t bytes_read = io::read(stream, std::forward<DynamicBuffer>(b), ec);
-    if (ec == io::make_error_code(stream_errc::eof)) {
+    if (ec == stream_errc::eof) {
         ec.clear();
     }
     return bytes_read;

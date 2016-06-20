@@ -97,7 +97,7 @@ public:
         pos_ += bytes_read;
 
         if (typename std::string::size_type(pos_) == str_.size()) {
-            ec = io::make_error_code(io::stream_errc::eof);
+            ec = io::stream_errc::eof;
         }
 
         return bytes_read;

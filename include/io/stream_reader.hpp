@@ -84,7 +84,7 @@ private:
         last_ = pos_ + bytes_read;
 
         if (ec) {
-            if (ec.value() == static_cast<int>(stream_errc::eof)) {
+            if (ec == stream_errc::eof) {
                 done_ = true;
             } else {
                 throw std::system_error(ec);

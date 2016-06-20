@@ -139,7 +139,7 @@ public:
     std::size_t read_some(const MutBufSeq& mb, std::error_code& ec)
     {
         if (pos_ == mmap_.size()) {
-            ec = make_error_code(stream_errc::eof);
+            ec = stream_errc::eof;
             return 0;
         }
 
