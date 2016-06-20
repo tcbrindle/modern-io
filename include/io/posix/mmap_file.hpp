@@ -24,7 +24,7 @@ struct mmap_handle {
                             MAP_FILE | MAP_SHARED,
                             fd.get(), 0);
 
-        if (!addr) {
+        if (addr == MAP_FAILED) {
             ec.assign(errno, std::system_category());
             return mmap_handle{};
         }
