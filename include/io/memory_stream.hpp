@@ -33,12 +33,12 @@ struct memory_stream_impl
     {
         ec.clear();
 
-        auto bytes_copied = io::buffer_copy(mb, this->buffer());
-        pos_ += bytes_copied;
-
         if (pos_ == this->size()) {
             ec = stream_errc::eof;
         }
+
+        auto bytes_copied = io::buffer_copy(mb, this->buffer());
+        pos_ += bytes_copied;
 
         return bytes_copied;
     }
