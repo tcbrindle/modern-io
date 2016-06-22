@@ -25,14 +25,17 @@ private:
     struct cursor {
         cursor() = default;
 
-        cursor(const stream_reader& sr) : buf_{sr.stream_.data()} {}
+        cursor(const stream_reader& sr)
+                : ptr_{reinterpret_cast<uint8_t*>(sr.stream_.data())},
+                  size_{sr.stream_.size()}
+        {}
 
         unsigned char get() const {
-            return *(static_cast<const unsigned char*>(buf_.data()) + pos_);
+            return *(ptr_ + pos_);
         }
 
         void set(unsigned char c) const {
-            *(static_cast<unsigned char*>(buf_.data()) + pos_) = c;
+            *(ptr_ + pos_) = c;
         }
 
         void next() {
@@ -45,8 +48,8 @@ private:
 
         bool equal(const cursor& other) const {
             return pos_ == other.pos_ &&
-                    buf_.data() == other.buf_.data() &&
-                    buf_.size() == other.buf_.size();
+                    ptr_ == other.ptr_ &&
+                    size_ == other.size_;
         }
 
         void advance(std::ptrdiff_t distance) {
@@ -58,16 +61,17 @@ private:
         }
 
         bool done() const {
-            return pos_ == buf_.size();
+            return pos_ == size_;
         }
 
-        mutable_buffer buf_{};
-        std::size_t pos_ = 0;
+        std::uint8_t* ptr_;
+        typename stream_type::size_type size_;
+        typename stream_type::offset_type pos_ = 0;
     };
 
     cursor begin_cursor() const { return cursor{*this}; }
 
-    stream_type stream_;
+    stream_type stream_{};
 };
 
 static_assert(rng::RandomAccessRange<stream_reader<posix::mmap_file>>(), "");

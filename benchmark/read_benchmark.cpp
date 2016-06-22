@@ -208,7 +208,7 @@ std::vector<std::uint8_t> read_modern_range_prealloc(const char* file_name)
 std::vector<std::uint8_t> read_modern_mmap_prealloc(const char* file_name)
 {
     auto file = io::posix::mmap_file::open(file_name);
-    std::vector<uint8_t> output(file.data().size());
+    std::vector<uint8_t> output(file.size());
     io::read(file, io::buffer(output));
     return output;
 }
@@ -225,7 +225,7 @@ std::vector<std::uint8_t> read_modern_mmap_range_prealloc(const char* file_name)
 {
     auto file = io::posix::mmap_file::open(file_name);
     std::vector<std::uint8_t> output;
-    output.reserve(file.data().size());
+    output.reserve(file.size());
     io::rng::copy(io::read(std::move(file)), io::rng::back_inserter(output));
     return output;
 }
