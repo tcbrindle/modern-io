@@ -3,6 +3,7 @@
 #define IO_POSIX_MMAP_FILE_HPP
 
 #include <io/posix/file.hpp>
+#include <io/memory_stream.hpp>
 
 #include <sys/mman.h>
 
@@ -68,9 +69,9 @@ private:
 
 } // end namespace detail
 
-class mmap_file {
+class mmap_file : public io::detail::memory_stream_impl<mmap_file, ::off_t> {
 public:
-    using offset_type = ::off_t;
+    using size_type = ::off_t;
 
     static mmap_file open(const io_std::filesystem::path& path)
     {
@@ -113,49 +114,17 @@ public:
 
     mmap_file() = default;
 
-    mutable_buffer data() const
-    {
-        return mutable_buffer(static_cast<char*>(mmap_.address()) + pos_,
-                              mmap_.size() - pos_);
-    }
 
-    /// SyncReadStream implementation
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
-    std::size_t read_some(const MutBufSeq& mb)
-    {
-        std::error_code ec;
-        std::size_t bytes_read = this->read_some(mb, ec);
-        if (ec) {
-            throw std::system_error{ec};
-        }
-        return bytes_read;
-    }
+    void* data() const noexcept { return mmap_.address(); }
 
-    /// SyncReadStream implementation
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
-    std::size_t read_some(const MutBufSeq& mb, std::error_code& ec)
-    {
-        if (pos_ == mmap_.size()) {
-            ec = stream_errc::eof;
-            return 0;
-        }
-
-        std::size_t bytes_copied = buffer_copy(mb, data());
-        pos_ += bytes_copied;
-
-        assert(pos_ <= mmap_.size());
-
-        return bytes_copied;
-    }
+    size_type size() const noexcept { return mmap_.size(); }
 
 private:
     mmap_file(detail::mmap_handle mmap)
-            : mmap_(std::move(mmap)) {}
+            : mmap_(std::move(mmap))
+    {}
 
     detail::mmap_handle mmap_{};
-    offset_type pos_ = 0;
 };
 
 } // namespace posix

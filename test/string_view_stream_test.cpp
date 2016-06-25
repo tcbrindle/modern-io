@@ -93,24 +93,43 @@ TEST_CASE("string_view streams can be read from", "[string_view_stream]")
         std::error_code ec{};
         std::size_t bytes_read = 0;
         REQUIRE_NOTHROW(bytes_read = d.read_some(io::buffer(buf), ec));
-        REQUIRE(ec == io::stream_errc::eof);
-        REQUIRE(ec.category() == io::stream_category());
+        REQUIRE_FALSE(ec);
         REQUIRE(bytes_read == test_string_view.size());
         REQUIRE(rng::equal(std::begin(buf),
                            std::begin(buf) + test_string_view.size(),
                            std::cbegin(test_string_view),
                            std::cend(test_string_view)));
+
+        SECTION("...and further reads result in an error") {
+            REQUIRE_NOTHROW(bytes_read = d.read_some(io::buffer(buf), ec));
+            REQUIRE(ec == io::stream_errc::eof);
+            REQUIRE(bytes_read == 0);
+            REQUIRE(rng::equal(std::begin(buf),
+                               std::begin(buf) + test_string_view.size(),
+                               std::cbegin(test_string_view),
+                               std::cend(test_string_view)));
+        }
     }
 
     SECTION("...using a long static buffer (throwing)") {
         std::array<char, 100> buf;
         std::size_t bytes_read = 0;
-        REQUIRE_THROWS_AS(bytes_read = d.read_some(io::buffer(buf)), std::system_error);
-        REQUIRE(bytes_read == 0); // Because above call doesn't return
+        REQUIRE_NOTHROW(bytes_read = d.read_some(io::buffer(buf)));
+        REQUIRE(bytes_read == test_string_view.size());
         REQUIRE(rng::equal(std::begin(buf),
                            std::begin(buf) + test_string_view.size(),
                            std::cbegin(test_string_view),
                            std::cend(test_string_view)));
+
+        SECTION("...and further reads result in an error") {
+            REQUIRE_THROWS_AS(bytes_read = d.read_some(io::buffer(buf)),
+                              std::system_error);
+            REQUIRE(bytes_read == test_string_view.size());
+            REQUIRE(rng::equal(std::begin(buf),
+                               std::begin(buf) + test_string_view.size(),
+                               std::cbegin(test_string_view),
+                               std::cend(test_string_view)));
+        }
     }
 
     SECTION("...using a dynamic buffer") {
@@ -127,10 +146,9 @@ TEST_CASE("string_view streams can be read from", "[string_view_stream]")
     SECTION("...using a dynamic buffer (throwing)") {
         std::vector<char> buf;
         std::size_t bytes_read = 0;
-        REQUIRE_THROWS_AS(bytes_read = io::read(d, io::dynamic_buffer(buf),
-                                   io::transfer_exactly{test_string_view.size()}),
-                          std::system_error);
-        REQUIRE(bytes_read == 0);
+        REQUIRE_NOTHROW(bytes_read = io::read(d, io::dynamic_buffer(buf),
+                                   io::transfer_exactly{test_string_view.size()}));
+        REQUIRE(bytes_read == test_string_view.size());
         REQUIRE(rng::equal(buf, test_string_view));
     }
 }

@@ -4,6 +4,7 @@
 
 #include <io/buffer.hpp>
 #include <io/io_concepts.hpp>
+#include <io/memory_stream.hpp>
 #include <io/seek.hpp>
 
 #include <iostream>
@@ -12,96 +13,29 @@ namespace io {
 
 /// A debug stream which reads from and writes to an internal `std::string`.
 /// The string can be accessed using the `str()` method
-class string_stream
+template <typename CharT, typename Traits = std::char_traits<CharT>>
+class basic_string_stream
+    : public detail::memory_stream_impl<basic_string_stream<CharT, Traits>, long>
 {
 public:
-    /// Offset type for seek operations
-    // Since std::string::size_type is required to be unsigned, let's just
-    // use long.
-    using offset_type = long;
+    using string_type = std::basic_string<CharT, Traits>;
+    using char_type = CharT;
+    using size_type = typename string_type::size_type;
 
     /// Default-constructs a `string_stream` with an empty string
-    string_stream() = default;
+    basic_string_stream() = default;
 
     /// Constructs a `string_stream` with an initial string
     /// Positions the stream pointer to the start of the string
     /// @param str String to initialise the stream with
     /// @throws std::exception if str could not be initialised
-    explicit string_stream(std::string str)
+    explicit basic_string_stream(string_type str)
             : str_(std::move(str))
     {}
 
     /// Get the contained string
-    const std::string& str() const noexcept { return str_; }
+    const string_type& str() const noexcept { return str_; }
 
-    /// `SyncReadStream` implementation
-    template <typename MutBufSeq,
-              CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
-    std::size_t read_some(const MutBufSeq& mb)
-    {
-        std::error_code ec;
-        auto bytes_read = read_some(mb, ec);
-        if (ec) {
-            throw std::system_error{ec};
-        }
-        return bytes_read;
-    }
-
-    /// `SyncReadStream` implementation
-    template <typename MutBufSeq,
-              CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
-    std::size_t read_some(const MutBufSeq& mb, std::error_code& ec)
-    {
-        ec.clear();
-
-        std::size_t total_buffer_size = io::buffer_size(mb);
-
-        if (total_buffer_size == 0) {
-            return 0;
-        }
-
-        std::size_t total_bytes_read = 0;
-        auto first = io::buffer_sequence_begin(mb);
-        auto last = io::buffer_sequence_end(mb);
-
-        while (first != last) {
-            std::size_t bytes_read = this->read_some(*first, ec);
-            total_bytes_read += bytes_read;
-
-            if (ec) {
-                break;
-            }
-
-            ++first;
-        }
-
-        return total_bytes_read;
-    }
-
-    std::size_t read_some(const mutable_buffer& mb, std::error_code& ec)
-    {
-        ec.clear();
-
-        if (mb.size() == 0) {
-            return 0;
-        }
-
-        std::size_t bytes_to_read = std::min(mb.size(), str_.size() - pos_);
-        char* buf_start = reinterpret_cast<char*>(mb.data());
-
-        char* buf_end = std::copy(str_.data() + pos_,
-                                  str_.data() + pos_ + bytes_to_read,
-                                  buf_start);
-
-        auto bytes_read = std::distance(buf_start, buf_end);
-        pos_ += bytes_read;
-
-        if (typename std::string::size_type(pos_) == str_.size()) {
-            ec = io::stream_errc::eof;
-        }
-
-        return bytes_read;
-    }
 
     /// SyncWriteStream implementation
     template <typename ConstBufSeq,
@@ -132,75 +66,29 @@ public:
         auto last = io::buffer_sequence_end(cb);
 
         while (first != last) {
-            str_.insert(pos_, reinterpret_cast<const char*>(first->data()), first->size());
+            str_.insert(this->get_position(),
+                        reinterpret_cast<const char_type*>(first->data()),
+                        first->size()/sizeof(char_type));
             total_bytes_written += first->size();
-            pos_ += first->size();
-            if (ec) {
-                break;
-            }
+            this->seek(first->size(), seek_mode::current, ec);
             ++first;
         }
 
         return total_bytes_written;
     }
 
-    std::size_t write_some(const const_buffer& cb, std::error_code& ec)
-    {
-        ec.clear();
+    const char_type* data() const noexcept { return str_.data(); }
 
-        if (cb.size() == 0) {
-            return 0;
-        }
-
-        str_.insert(pos_, reinterpret_cast<const char*>(cb.data()), cb.size());
-        pos_ += cb.size();
-
-        return cb.size();
-    }
-
-    /// SeekableStream implementation
-    offset_type seek(offset_type from, seek_mode mode)
-    {
-        std::error_code ec;
-        auto offset = this->seek(from, mode, ec);
-        if (ec) {
-            throw std::system_error{ec};
-        }
-        return offset;
-    }
-
-    /// SeekableStream implementation
-    offset_type seek(offset_type from, seek_mode mode, std::error_code& ec)
-    {
-        auto old_pos = pos_; // To reset on error
-
-        switch (mode) {
-        case seek_mode::current:
-            pos_ += from;
-            break;
-        case seek_mode::start:
-            pos_ = from;
-            break;
-        case seek_mode::end:
-            pos_ = str_.size() + from;
-            break;
-        }
-
-        if (pos_ < 0) {
-            pos_ = old_pos;
-            ec = std::make_error_code(std::errc::invalid_seek);
-        }
-
-        return pos_;
-    }
-
-    /// SeekableStream implementation
-    offset_type get_position() const noexcept { return pos_; }
+    size_type size() const noexcept { return str_.size(); }
 
 private:
-    std::string str_;
-    offset_type pos_ = 0;
+    string_type str_;
 };
+
+using string_stream = basic_string_stream<char>;
+using u16string_stream = basic_string_stream<char16_t>;
+using u32string_stream = basic_string_stream<char32_t>;
+using wstring_stream = basic_string_stream<wchar_t>;
 
 }
 
