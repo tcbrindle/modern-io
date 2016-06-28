@@ -65,20 +65,6 @@ public:
     using offset_type = ::off_t;
     using native_handle_type = int;
 
-    static file open(const io_std::filesystem::path& path, std::error_code& ec) noexcept
-    {
-        ec.clear();
-        errno = 0;
-        file_descriptor_handle fd{::open(path.c_str(), O_RDWR | O_CREAT, 0600), true};
-
-        if (fd.get() < 0) {
-            ec.assign(errno, std::system_category());
-            return posix::file{};
-        }
-
-        return posix::file{std::move(fd)};
-    }
-
     file() = default;
 
     explicit file(posix::file_descriptor_handle fd) noexcept

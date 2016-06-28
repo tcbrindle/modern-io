@@ -17,15 +17,30 @@ namespace fs = io_std::filesystem;
 
 using file = posix::file;
 
-inline file open_file(const fs::path& path, std::error_code& ec) noexcept
+inline file open_file(const fs::path& path,
+                      open_mode mode,
+                      fs::perms create_perms,
+                      std::error_code& ec) noexcept
 {
-    return file::open(path, ec);
+    file f;
+    f.open(path, mode, create_perms, ec);
+    return f;
 }
 
-inline file open_file(const fs::path& path)
+
+inline file open_file(const fs::path& path,
+                      open_mode mode,
+                      std::error_code& ec) noexcept
+{
+    return open_file(path, mode, default_creation_perms, ec);
+}
+
+inline file open_file(const fs::path& path,
+                      open_mode mode,
+                      fs::perms perms = default_creation_perms)
 {
     std::error_code ec{};
-    auto f = open_file(path, ec);
+    auto f = open_file(path, mode, perms, ec);
     if (ec) {
         throw std::system_error{ec};
     }
