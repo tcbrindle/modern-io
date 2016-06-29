@@ -171,6 +171,33 @@ public:
         mmap_.unmap(ec);
     }
 
+    template <typename ConstBufSeq,
+              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    std::size_t write_some(const ConstBufSeq& cb)
+    {
+        std::error_code ec;
+        std::size_t bytes_written = this->write_some(cb, ec);
+        if (ec) {
+            throw std::system_error{ec};
+        }
+        return bytes_written;
+    }
+
+    template <typename ConstBufSeq,
+              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    std::size_t write_some(const ConstBufSeq& cb, std::error_code& ec)
+    {
+        ec.clear();
+        errno = 0;
+
+        auto buf = io::buffer(data(), size()) + get_position();
+
+        auto total_bytes_written = io::buffer_copy(buf, cb);
+        this->seek(total_bytes_written, io::seek_mode::current, ec);
+
+        return total_bytes_written;
+    }
+
     void* data() const noexcept { return mmap_.address(); }
 
     size_type size() const noexcept { return mmap_.size(); }
