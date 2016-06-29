@@ -3,6 +3,7 @@
 #define IO_POSIX_MMAP_STREAM_READER_HPP
 
 #include <io/posix/mmap_file.hpp>
+#include <io/stream_reader.hpp>
 
 namespace io {
 

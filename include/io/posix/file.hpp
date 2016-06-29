@@ -257,7 +257,7 @@ public:
         return bytes_written;
     }
 
-    std::size_t write_some(const io::mutable_buffer& cb, std::error_code& ec)
+    std::size_t write_some(const io::const_buffer& cb, std::error_code& ec)
     {
         ec.clear();
 
