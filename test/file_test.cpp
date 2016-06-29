@@ -21,7 +21,7 @@ void test_read(File&& file)
     std::string contents;
     REQUIRE_NOTHROW(io::read_all(file, io::dynamic_buffer(contents)));
 
-    REQUIRE(contents == test_file_contents);
+    REQUIRE((contents == test_file_contents));
 }
 
 template <typename File>

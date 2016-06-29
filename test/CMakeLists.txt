@@ -14,4 +14,4 @@ add_executable(test-modern-io
 
 add_dependencies(test-modern-io range-v3)
 target_include_directories(test-modern-io PRIVATE ${RANGE_INCLUDE_DIR})
-target_link_libraries(test-modern-io Threads::Threads)
+target_link_libraries(test-modern-io Threads::Threads ${MODERN_IO_FILESYSTEM_LIBRARY})
