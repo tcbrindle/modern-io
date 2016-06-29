@@ -134,13 +134,13 @@ public:
         errno = 0;
 
         // First, try to open the file
-        file_descriptor_handle new_fd{::open(path.c_str(),
-                                             detail::open_mode_to_posix_mode(mode),
-                                             static_cast<::mode_t>(create_perms))};
-        if (new_fd.get() < 0) {
+        int raw_fd = ::open(path.c_str(), detail::open_mode_to_posix_mode(mode),
+                            static_cast<::mode_t>(create_perms));
+        if (raw_fd < 0) {
             ec.assign(errno, std::system_category());
             return;
         }
+        file_descriptor_handle new_fd{raw_fd};
 
         // Now seek to the end to find the file size
         offset_type size = ::lseek(new_fd.get(), 0, SEEK_END);
