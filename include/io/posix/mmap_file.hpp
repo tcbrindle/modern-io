@@ -17,11 +17,22 @@ namespace detail {
 struct mmap_handle {
 
     static mmap_handle create(const file_descriptor_handle& fd, ::off_t size,
+                              io::open_mode mode,
                               std::error_code& ec)
     {
         ec.clear();
-        void* addr = ::mmap(nullptr, size,
-                            PROT_READ | PROT_WRITE,
+
+        int prot = PROT_NONE;
+
+        if ((mode & open_mode::read_only) != open_mode(0)) {
+            prot = PROT_READ;
+        } else if ((mode & open_mode::write_only) != open_mode(0)) {
+            prot = PROT_WRITE;
+        } else if ((mode & open_mode::read_write) != open_mode(0)) {
+            prot = PROT_READ | PROT_WRITE;
+        }
+
+        void* addr = ::mmap(nullptr, size, prot,
                             MAP_FILE | MAP_SHARED,
                             fd.get(), 0);
 
@@ -54,9 +65,30 @@ struct mmap_handle {
         other.size_ = 0;
     }
 
+    mmap_handle& operator=(mmap_handle&& other)
+    {
+        if (&other != this) {
+            std::swap(addr_, other.addr_);
+            std::swap(size_, other.size_);
+        }
+        return *this;
+    }
+
     void* address() const { return addr_; }
 
     ::off_t size() const { return size_; }
+
+    void unmap(std::error_code& ec)
+    {
+        ec.clear();
+        errno = 0;
+        if (::munmap(addr_, size_) != 0) {
+            ec.assign(errno, std::system_category());
+        } else {
+            addr_ = nullptr;
+            size_ = 0;
+        }
+    }
 
 private:
 
@@ -73,47 +105,98 @@ class mmap_file : public io::detail::memory_stream_impl<mmap_file, ::off_t> {
 public:
     using size_type = ::off_t;
 
-    static mmap_file open(const io_std::filesystem::path& path)
+    mmap_file() = default;
+
+    mmap_file(const io_std::filesystem::path& path,
+              open_mode mode,
+              io_std::filesystem::perms create_perms = default_creation_perms)
+    {
+        this->open(path, mode, create_perms);
+    }
+
+    void open(const io_std::filesystem::path& path,
+              open_mode mode,
+              io_std::filesystem::perms create_perms = default_creation_perms)
     {
         std::error_code ec;
-        auto file = mmap_file::open(path, ec);
+        this->open(path, mode, create_perms, ec);
         if (ec) {
             throw std::system_error{ec};
         }
-        return file;
     }
 
-    static mmap_file open(const io_std::filesystem::path& path,
-                          std::error_code& ec)
+    void open(const io_std::filesystem::path& path,
+              open_mode mode,
+              io_std::filesystem::perms create_perms,
+              std::error_code& ec) noexcept
     {
         ec.clear();
         errno = 0;
 
         // First, try to open the file
-        file_descriptor_handle fd{::open(path.c_str(), O_RDWR | O_CREAT, 0600),
-                                  true};
-        if (fd.get() < 0) {
+        int raw_fd = ::open(path.c_str(), detail::open_mode_to_posix_mode(mode),
+                            static_cast<::mode_t>(create_perms));
+        if (raw_fd < 0) {
             ec.assign(errno, std::system_category());
-            return mmap_file{};
+            return;
         }
+        file_descriptor_handle new_fd{raw_fd};
 
-        // Seek to the end to find the size
-        offset_type size = ::lseek(fd.get(), 0, SEEK_END);
+        // Now seek to the end to find the file size
+        offset_type size = ::lseek(new_fd.get(), 0, SEEK_END);
         if (size == -1) {
             ec.assign(errno, std::system_category());
-            return mmap_file{};
+            return;
         }
 
-        auto mmap = detail::mmap_handle::create(fd, size, ec);
+        auto mmap = detail::mmap_handle::create(new_fd, size, mode, ec);
         if (ec) {
-            return mmap_file{};
+            return;
         }
 
-        return mmap_file{std::move(mmap)};
+        this->mmap_ = std::move(mmap);
     }
 
-    mmap_file() = default;
+    void close()
+    {
+        std::error_code ec;
+        this->close(ec);
+        if (ec) {
+            throw std::system_error{ec};
+        }
+    }
 
+    void close(std::error_code& ec)
+    {
+        mmap_.unmap(ec);
+    }
+
+    template <typename ConstBufSeq,
+              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    std::size_t write_some(const ConstBufSeq& cb)
+    {
+        std::error_code ec;
+        std::size_t bytes_written = this->write_some(cb, ec);
+        if (ec) {
+            throw std::system_error{ec};
+        }
+        return bytes_written;
+    }
+
+    template <typename ConstBufSeq,
+              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    std::size_t write_some(const ConstBufSeq& cb, std::error_code& ec)
+    {
+        ec.clear();
+        errno = 0;
+
+        auto buf = io::buffer(data(), size()) + get_position();
+
+        auto total_bytes_written = io::buffer_copy(buf, cb);
+        this->seek(total_bytes_written, io::seek_mode::current, ec);
+
+        return total_bytes_written;
+    }
 
     void* data() const noexcept { return mmap_.address(); }
 

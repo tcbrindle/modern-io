@@ -28,6 +28,15 @@ struct file_descriptor_handle {
         other.delete_ = false;
     }
 
+    file_descriptor_handle& operator=(file_descriptor_handle&& other) noexcept
+    {
+        if (&other != this) {
+            std::swap(fd_, other.fd_);
+            std::swap(delete_, other.delete_);
+        }
+        return *this;
+    }
+
     /// Destroy the `file_descriptor_handle`
     /// If the underlying fd is owned, this will call ::close()
     ~file_descriptor_handle() noexcept
@@ -44,6 +53,19 @@ struct file_descriptor_handle {
 
     /// Return the value of the fd
     int get() const noexcept { return fd_; }
+
+    /// Manually close the file descriptor
+    void close(std::error_code& ec) noexcept
+    {
+        ec.clear();
+        errno = 0;
+        if (::close(fd_) == 0) {
+            fd_ = -1;
+            delete_ = false;
+        } else {
+            ec.assign(errno, std::system_category());
+        }
+    }
 
 private:
     int fd_ = -1;
