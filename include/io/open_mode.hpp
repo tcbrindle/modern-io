@@ -6,6 +6,10 @@
 #ifndef IO_OPEN_MODE_HPP
 #define IO_OPEN_MODE_HPP
 
+#include <io/io_std/filesystem.hpp>
+
+#include <type_traits>
+
 namespace io {
 
 /// Flags to specify modes when opening a file

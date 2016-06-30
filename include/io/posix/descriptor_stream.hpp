@@ -8,6 +8,7 @@
 #define IO_POSIX_DESCRIPTOR_STREAM_HPP
 
 #include <io/buffer.hpp>
+#include <io/io_concepts.hpp>
 #include <io/posix/file_descriptor_handle.hpp>
 
 #include <sys/types.h>

@@ -8,12 +8,15 @@
 
 #include <io/io_std/filesystem.hpp>
 #include <io/open_mode.hpp>
+#include <io/seek.hpp>
 #include <io/posix/file_descriptor_handle.hpp>
 
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
+
+#include <array>
 
 namespace io {
 namespace posix {

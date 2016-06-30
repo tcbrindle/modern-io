@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include <cassert>
+#include <system_error>
 
 namespace io {
 namespace posix {
