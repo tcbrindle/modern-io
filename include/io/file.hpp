@@ -12,14 +12,18 @@
 
 #include <io/io_std/filesystem.hpp>
 #include <io/io_concepts.hpp>
+#include <io/read_only.hpp>
 #include <io/seek.hpp>
 #include <io/posix/file.hpp>
+#include <io/write_only.hpp>
 
 namespace io {
 
 namespace fs = io_std::filesystem;
 
 using file = posix::file;
+using input_file = read_only<file>;
+using output_file = write_only<file>;
 
 inline file open_file(const fs::path& path,
                       open_mode mode,
