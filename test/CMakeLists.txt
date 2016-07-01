@@ -7,6 +7,7 @@ add_executable(test-modern-io
     buffer_copy_test.cpp
     catch_main.cpp
     file_test.cpp
+    read_only_test.cpp
     read_until_test.cpp
     string_stream_test.cpp
     string_view_stream_test.cpp
