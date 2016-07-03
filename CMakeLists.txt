@@ -14,8 +14,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 include_directories(include)
+set(RANGE_INCLUDE_DIR "${modern.io_SOURCE_DIR}/external/range-v3/include")
 
-add_subdirectory(external)
 add_subdirectory(benchmark)
 add_subdirectory(test)
 
