@@ -6,7 +6,6 @@
 #ifndef IO_FILE_HPP
 #define IO_FILE_HPP
 
-#include <unistd.h>
 
 #include <system_error>
 
@@ -14,14 +13,24 @@
 #include <io/io_concepts.hpp>
 #include <io/read_only.hpp>
 #include <io/seek.hpp>
-#include <io/posix/file.hpp>
 #include <io/write_only.hpp>
+
+#ifdef WIN32
+#include <io/windows/file.hpp>
+#else
+#include <io/posix/file.hpp>
+#endif
 
 namespace io {
 
 namespace fs = io_std::filesystem;
 
+#ifdef WIN32
+using file = windows::file;
+#else
 using file = posix::file;
+#endif
+
 using input_file = read_only<file>;
 using output_file = write_only<file>;
 
