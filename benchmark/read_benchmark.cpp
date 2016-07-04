@@ -14,7 +14,10 @@
 #include <io/file.hpp>
 #include <io/read.hpp>
 #include <io/stream_reader.hpp>
+
+#ifdef _POSIX_VERSION
 #include <io/posix/mmap_file.hpp>
+#endif
 
 #include <range/v3/algorithm/copy.hpp>
 
@@ -204,6 +207,7 @@ std::vector<std::uint8_t> read_modern_range_prealloc(const char* file_name)
     return output;
 }
 
+#ifdef _POSIX_VERSION
 /*
  * modern::io mmap tests
  */
@@ -234,6 +238,8 @@ std::vector<std::uint8_t> read_modern_mmap_range_prealloc(const char* file_name)
     return output;
 }
 
+#endif // _POSIX_VERSION
+
 } // end anonymous namespace
 
 int main(int argc, char** argv)
@@ -253,13 +259,13 @@ int main(int argc, char** argv)
             { "stdio preallocated read", read_stdio_prealloc },
             { "iostream preallocated read", read_iostream_prealloc },
             { "modern::io preallocated read", read_modern_prealloc },
-            { "modern::io preallocated mmap read", read_modern_mmap_prealloc },
+         //   { "modern::io preallocated mmap read", read_modern_mmap_prealloc },
             { "iostream incremental range read", read_iostream_range },
             { "modern::io incremental range read", read_modern_range },
-            { "modern::io incremental mmap range read", read_modern_mmap_range },
+         //   { "modern::io incremental mmap range read", read_modern_mmap_range },
             { "iostream preallocated range read", read_iostream_range_prealloc },
             { "modern::io preallocated range read", read_modern_range_prealloc },
-            { "modern::io preallocated mmap range read", read_modern_mmap_range_prealloc },
+         //   { "modern::io preallocated mmap range read", read_modern_mmap_range_prealloc },
     };
 
     std::chrono::microseconds reference_time;
