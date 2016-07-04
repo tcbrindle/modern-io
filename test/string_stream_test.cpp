@@ -8,7 +8,8 @@
 #include <io/string_stream.hpp>
 #include <io/stream_reader.hpp>
 
-#include <range/v3/algorithm.hpp>
+#include <range/v3/algorithm/copy.hpp>
+#include <range/v3/algorithm/equal.hpp>
 
 #include <array>
 #include <string>
