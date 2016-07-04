@@ -29,13 +29,25 @@
     #endif // (__has_include(<string_view>) || __has_include(<experimental/string_view>))
 #endif // __has_include
 #else // WIN32
-#include <boost/filesystem.hpp>
+#if _MSC_VER // MSVC
+#include <filesystem>
 #define IO_HAVE_STD_FILESYSTEM 1
 namespace io_std {
-    namespace filesystem {
-        using namespace boost::filesystem;
-    }
+namespace filesystem {
+	using std::experimental::filesystem::path;
+	using std::experimental::filesystem::perms;
 }
+}
+#else // MinGW
+#define IO_HAVE_STD_FILESYSTEM 1
+#include <boost/filesystem.hpp>
+namespace io_std {
+namespace filesystem {
+	using boost::filesystem::path;
+	using boost::filesystem::perms;
+}
+}
+#endif // MSC_VER
 #endif //WIN32
 
 #if !IO_HAVE_STD_FILESYSTEM
