@@ -10,7 +10,12 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror")
 
 # g++ (currently?) requires us to link to the filesystem library separately
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set(MODERN_IO_FILESYSTEM_LIBRARY stdc++fs)
+    #set(MODERN_IO_FILESYSTEM_LIBRARY stdc++fs)
+endif()
+
+if (WIN32)
+    find_package(Boost COMPONENTS filesystem REQUIRED)
+    include_directories(${Boost_INCLUDE_DIR})
 endif()
 
 include_directories(include)

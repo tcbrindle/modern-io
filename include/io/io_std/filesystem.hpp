@@ -6,6 +6,7 @@
 #ifndef IO_STD_FILESYSTEM_HPP
 #define IO_STD_FILESYSTEM_HPP
 
+#ifndef WIN32
 #ifdef __has_include
 #if __has_include(<filesystem>)
         #include <filesystem>
@@ -27,6 +28,15 @@
         }
     #endif // (__has_include(<string_view>) || __has_include(<experimental/string_view>))
 #endif // __has_include
+#else // WIN32
+#include <boost/filesystem.hpp>
+#define IO_HAVE_STD_FILESYSTEM 1
+namespace io_std {
+    namespace filesystem {
+        using namespace boost::filesystem;
+    }
+}
+#endif //WIN32
 
 #if !IO_HAVE_STD_FILESYSTEM
 
