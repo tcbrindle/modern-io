@@ -16,6 +16,7 @@ endif()
 if (WIN32)
     find_package(Boost COMPONENTS filesystem REQUIRED)
     include_directories(${Boost_INCLUDE_DIR})
+    set(MODERN_IO_FILESYSTEM_LIBRARY ${Boost_LIBRARIES})
 endif()
 
 include_directories(include)
