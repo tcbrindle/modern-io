@@ -4,10 +4,12 @@
 #ifndef MODERN_IO_FILE_HPP
 #define MODERN_IO_FILE_HPP
 
-#include <io/open_mode.hpp>
+#define UNICODE
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <io/open_mode.hpp>
+#include <io/windows/handle.hpp>
+
+#include <iostream>
 
 namespace io {
     namespace windows {
@@ -21,8 +23,42 @@ namespace io {
                 }
                 return -1;
             }
-        }
 
+            constexpr DWORD open_mode_to_desired_access(open_mode m)
+            {
+                if ((m & open_mode::read_only) != static_cast<open_mode>(0)) {
+                    return  GENERIC_READ;
+                }
+                if ((m & open_mode::write_only) != static_cast<open_mode>(0)) {
+                    return GENERIC_WRITE;
+                }
+                if ((m & open_mode::read_write) != static_cast<open_mode>(0)) {
+                    return GENERIC_READ | GENERIC_WRITE;
+                }
+                return 0;
+            }
+
+            constexpr DWORD perms_to_shared_mode(io_std::filesystem::perms)
+            {
+                // FIXME: Implement this properly
+                return FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+            }
+
+            constexpr DWORD open_mode_to_creation_disp(open_mode m)
+            {
+                if ((m & open_mode::truncate) != static_cast<open_mode>(0)) {
+                    return  TRUNCATE_EXISTING;
+                }
+                if ((m & open_mode::always_create) != static_cast<open_mode>(0)) {
+                    return CREATE_ALWAYS;
+                }
+                if ((m & open_mode::create) != static_cast<open_mode>(0)) {
+                    return OPEN_ALWAYS;
+                }
+                // neither create nor always_create was specified, so open existing
+                return OPEN_EXISTING;
+            }
+        }
 
         class file {
         public:
@@ -51,11 +87,34 @@ namespace io {
 
 
             void open(const io_std::filesystem::path& path,
-                      open_mode mode,
-                      io_std::filesystem::perms create_perms,
+                      open_mode /*mode*/,
+                      io_std::filesystem::perms /*create_perms*/,
                       std::error_code& ec) noexcept
             {
+                /*HANDLE new_handle = ::CreateFileW(path.c_str(),
+                                      detail::open_mode_to_desired_access(mode),
+                                      detail::perms_to_shared_mode(create_perms),
+                                      nullptr, // SECURITY_ATTRIBUTES
+                                      detail::open_mode_to_creation_disp(mode),
+                                      FILE_ATTRIBUTE_NORMAL,
+                                      nullptr // Template handle
+                                      );*/
+                const auto full_path = io_std::filesystem::system_complete(path);
+                std::wcout << full_path.c_str() << std::endl;
+                HANDLE new_handle =
+                        ::CreateFileW(full_path.c_str(),
+                                      GENERIC_READ,
+                                      0,
+                                      nullptr,
+                                      OPEN_EXISTING,
+                                      FILE_ATTRIBUTE_NORMAL,
+                                      nullptr);
 
+                if (!new_handle) {
+                    ec.assign(::GetLastError(), std::system_category());
+                } else {
+                    handle_ = handle_t{new_handle};
+                }
             }
 
             void close()
@@ -69,14 +128,12 @@ namespace io {
 
             void close(std::error_code& ec) noexcept
             {
-                if (!CloseHandle(handle_)) {
-                    ec.assign(GetLastError(), std::system_category());
-                };
+                handle_.close(ec);
             }
 
             native_handle_type native_handle() const noexcept
             {
-                return handle_;
+                return handle_.get();
             }
 
             // SyncReadStream implementation
@@ -97,7 +154,14 @@ namespace io {
                     CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
             std::size_t read_some(const MutBufSeq& mb, std::error_code& ec) noexcept;
 
-            std::size_t read_some(const io::mutable_buffer& mb, std::error_code& ec);
+            std::size_t read_some(const io::mutable_buffer& mb, std::error_code& ec)
+            {
+                DWORD bytes_read = 0;
+                if (!::ReadFile(handle_.get(), mb.data(), mb.size(), &bytes_read, nullptr)) {
+                    ec.assign(::GetLastError(), std::system_category());
+                }
+                return bytes_read;
+            }
 
             // SyncWriteStream implementation
 
@@ -119,7 +183,11 @@ namespace io {
                     CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
             std::size_t write_some(ConstBufSeq& cb, std::error_code& ec) noexcept;
 
-            std::size_t write_some(const io::const_buffer& cb, std::error_code& ec);
+            std::size_t write_some(const io::const_buffer& /*cb*/, std::error_code& ec)
+            {
+                ec = std::make_error_code(std::errc::not_supported);
+                return 0;
+            }
 
             offset_type seek(offset_type offset, seek_mode from)
             {
@@ -137,14 +205,20 @@ namespace io {
                 LARGE_INTEGER l_offset{};
                 l_offset.QuadPart = offset;
                 LARGE_INTEGER new_pos{};
-                bool success = SetFilePointerEx(handle_, l_offset, &new_pos, detail::seek_mode_to_windows_mode(from));
+                bool success = ::SetFilePointerEx(handle_.get(), l_offset, &new_pos,
+                                                  detail::seek_mode_to_windows_mode(from));
                 if (!success) {
-                    ec.assign(GetLastError(), std::system_category());
+                    ec.assign(::GetLastError(), std::system_category());
                 }
                 return new_pos.QuadPart;
             }
 
-            void sync(std::error_code& ec) noexcept;
+            void sync(std::error_code& ec) noexcept
+            {
+                if (!::FlushFileBuffers(handle_.get())) {
+                    ec.assign(::GetLastError(), std::system_category());
+                }
+            }
 
             void sync()
             {
@@ -156,7 +230,7 @@ namespace io {
             }
 
         private:
-            HANDLE handle_ = nullptr;
+            windows::handle_t handle_{};
         };
 
         static_assert(SeekableStream<windows::file>(),
