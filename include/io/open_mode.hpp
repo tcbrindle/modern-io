@@ -75,7 +75,7 @@ constexpr open_mode& operator|=(open_mode& lhs, open_mode rhs)
 }
 
 /// Default permissions when creating a new file, if not overridden
-constexpr io_std::filesystem::perms default_creation_perms =
+const io_std::filesystem::perms default_creation_perms =
     io_std::filesystem::perms::owner_read |
     io_std::filesystem::perms::owner_write;
 

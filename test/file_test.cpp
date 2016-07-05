@@ -7,7 +7,7 @@
 
 #include <io/file.hpp>
 #include <io/read.hpp>
-#include <io/posix/mmap_file.hpp>
+//#include <io/posix/mmap_file.hpp>
 #include <io/io_std/string_view.hpp>
 
 #include <cstdio>
@@ -63,10 +63,10 @@ TEST_CASE("Files reads work as expected", "[file]")
         test_read(file);
     }
 
-    SECTION("io::posix::mmap_file can read properly") {
-        io::posix::mmap_file file{test_file_name, io::open_mode::read_only};
-        test_read(file);
-    }
+   // SECTION("io::posix::mmap_file can read properly") {
+   //     io::posix::mmap_file file{test_file_name, io::open_mode::read_only};
+   //     test_read(file);
+   // }
 
     std::remove(test_file_name);
 }

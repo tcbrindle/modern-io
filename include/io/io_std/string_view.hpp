@@ -31,7 +31,14 @@
 #endif // __has_include
 
 #if !IO_HAVE_STRING_VIEW
-#error "Standard library implementation does not include std::string_view or std::experimental::string_view."
+#include "boost_string_view.hpp"
+namespace io_std {
+using boost::basic_string_view;
+using string_view = boost::string_view;
+using u16string_view = boost::u16string_view;
+using u32string_view = boost::u32string_view;
+using wstring_view = boost::wstring_view;
+}
 #endif // !IO_HAVE_STRING_VIEW
 
 #endif // IO_STD_STRING_VIEW_HPP
