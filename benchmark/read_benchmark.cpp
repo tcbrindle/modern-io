@@ -253,20 +253,34 @@ int main(int argc, char** argv)
     const bool check = argc > 2 && argv[2] == std::string("check");
 
     using test_entry = std::pair<std::string, std::vector<std::uint8_t>(*)(const char*)>;
+#ifdef _POSIX_VERSION
     const std::vector<test_entry> tests {
             { "stdio incremental read", read_stdio_inc },
             { "modern::io incremental read", read_modern_inc },
             { "stdio preallocated read", read_stdio_prealloc },
             { "iostream preallocated read", read_iostream_prealloc },
             { "modern::io preallocated read", read_modern_prealloc },
-         //   { "modern::io preallocated mmap read", read_modern_mmap_prealloc },
+            { "modern::io preallocated mmap read", read_modern_mmap_prealloc },
             { "iostream incremental range read", read_iostream_range },
             { "modern::io incremental range read", read_modern_range },
-         //   { "modern::io incremental mmap range read", read_modern_mmap_range },
+            { "modern::io incremental mmap range read", read_modern_mmap_range },
             { "iostream preallocated range read", read_iostream_range_prealloc },
             { "modern::io preallocated range read", read_modern_range_prealloc },
-         //   { "modern::io preallocated mmap range read", read_modern_mmap_range_prealloc },
+            { "modern::io preallocated mmap range read", read_modern_mmap_range_prealloc },
     };
+#else // !_POSIX_VERSION
+    const std::vector<test_entry> tests {
+            { "stdio incremental read", read_stdio_inc },
+            { "modern::io incremental read", read_modern_inc },
+            { "stdio preallocated read", read_stdio_prealloc },
+            { "iostream preallocated read", read_iostream_prealloc },
+            { "modern::io preallocated read", read_modern_prealloc },
+            { "iostream incremental range read", read_iostream_range },
+            { "modern::io incremental range read", read_modern_range },
+            { "iostream preallocated range read", read_iostream_range_prealloc },
+            { "modern::io preallocated range read", read_modern_range_prealloc },
+    };
+#endif // _POSIX_VERSION
 
     std::chrono::microseconds reference_time;
     std::size_t file_size = 0;
