@@ -21,6 +21,8 @@
 
 #include <range/v3/algorithm/copy.hpp>
 
+#include "black_box.hpp"
+
 namespace {
 
 struct timer {
@@ -310,13 +312,14 @@ int main(int argc, char** argv)
         std::cout << test.first << " ";
         try {
             auto t = timer{};
+            std::vector<std::uint8_t> v;
             for (int i = 0; i < n_times; i++) {
-                volatile auto v = test.second(file_name);
+                io::black_box(v = test.second(file_name));
             }
             auto e = t.elapsed();
-            //if (check && v != reference) {
-            //    throw std::runtime_error{"read does not match reference output"};
-            //}
+            if (check && v != reference) {
+                throw std::runtime_error{"read does not match reference output"};
+            }
             std::cout << "took " << e.count() << "ms ("
                       << n_times * file_size/(1000.0 * e.count()) << "MB/s)\n";
         } catch (const std::exception& e){
