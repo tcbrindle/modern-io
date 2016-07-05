@@ -16,15 +16,14 @@ enum class seek_mode {
     current
 };
 
-template <typename Stream,
-          CONCEPT_REQUIRES_(SeekableStream<Stream>())>
-using offset_type = typename Stream::offset_type;
+template <typename Stream>
+using offset_t = decltype(std::declval<Stream>().seek(0, seek_mode::start));
 
 template <typename Stream,
           CONCEPT_REQUIRES_(SeekableStream<Stream>())>
-offset_type<Stream>
+offset_t<Stream>
 seek(Stream& stream,
-     offset_type<Stream> offset,
+     offset_t<Stream> offset,
      seek_mode from,
      std::error_code& ec)
 {
@@ -33,9 +32,9 @@ seek(Stream& stream,
 
 template <typename Stream,
           CONCEPT_REQUIRES_(SeekableStream<Stream>())>
-offset_type<Stream>
+offset_t<Stream>
 seek(Stream& stream,
-     offset_type<Stream> offset,
+     offset_t<Stream> offset,
      seek_mode from)
 {
     return stream.seek(offset, from);
@@ -43,16 +42,16 @@ seek(Stream& stream,
 
 template <typename Stream,
           CONCEPT_REQUIRES_(SeekableStream<Stream>())>
-offset_type<Stream>
-get_position(Stream& stream, std::error_code& ec)
+offset_t<Stream>
+get_position(const Stream& stream, std::error_code& ec)
 {
     return stream.get_position(ec);
 }
 
 template <typename Stream,
           CONCEPT_REQUIRES_(SeekableStream<Stream>())>
-offset_type<Stream>
-get_position(Stream& stream)
+offset_t<Stream>
+get_position(const Stream& stream)
 {
     return stream.get_position();
 }
