@@ -7,7 +7,7 @@
 #define IO_BASIC_ADAPTOR_HPP
 
 #include <io/io_concepts.hpp>
-
+#include <io/seek.hpp>
 
 #include <type_traits>
 
@@ -105,6 +105,27 @@ public:
     std::size_t write_some(const ConstBufSeq& cb, std::error_code& ec)
     {
         return stream_.write_some(cb, ec);
+    }
+
+    /// Performs a seek, if the underlying stream supports this.
+    /// Forwards to stream_type::seek(), if that exists
+    template <CONCEPT_REQUIRES_(SeekableStream<Stream>())>
+    offset_t<Stream> seek(offset_t<Stream> distance, seek_mode from)
+    {
+        std::error_code ec;
+        auto new_pos = this->seek(distance, from, ec);
+        if (ec) {
+            throw std::system_error{ec};
+        }
+        return new_pos;
+    }
+
+    /// Performs a seek, if the underlying stream supports this.
+    /// Forwards to stream_type::seek(), if that exists
+    template <CONCEPT_REQUIRES_(SeekableStream<Stream>())>
+    offset_t<Stream> seek(offset_t<Stream> distance, seek_mode from, std::error_code& ec)
+    {
+        return stream_.seek(distance, from, ec);
     }
 
 protected:
