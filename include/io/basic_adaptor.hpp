@@ -109,8 +109,10 @@ public:
 
     /// Performs a seek, if the underlying stream supports this.
     /// Forwards to stream_type::seek(), if that exists
-    template <CONCEPT_REQUIRES_(SeekableStream<Stream>())>
-    offset_t<Stream> seek(offset_t<Stream> distance, seek_mode from)
+    template <typename OffsetType,
+              CONCEPT_REQUIRES_(SeekableStream<Stream>())>
+    auto seek(OffsetType distance, seek_mode from)
+        -> decltype(io::seek(std::declval<Stream>(), distance, from))
     {
         std::error_code ec;
         auto new_pos = this->seek(distance, from, ec);
@@ -122,8 +124,10 @@ public:
 
     /// Performs a seek, if the underlying stream supports this.
     /// Forwards to stream_type::seek(), if that exists
-    template <CONCEPT_REQUIRES_(SeekableStream<Stream>())>
-    offset_t<Stream> seek(offset_t<Stream> distance, seek_mode from, std::error_code& ec)
+    template <typename OffsetType,
+              CONCEPT_REQUIRES_(SeekableStream<Stream>())>
+    auto seek(OffsetType distance, seek_mode from, std::error_code& ec)
+        -> decltype(io::seek(std::declval<Stream>(), distance, from, ec))
     {
         return stream_.seek(distance, from, ec);
     }

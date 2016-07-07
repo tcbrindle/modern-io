@@ -7,14 +7,9 @@
 #define IO_SEEK_HPP
 
 #include <io/io_concepts.hpp>
+#include <io/seek_mode.hpp>
 
 namespace io {
-
-enum class seek_mode {
-    start,
-    end,
-    current
-};
 
 template <typename Stream>
 using offset_t = decltype(std::declval<Stream>().seek(0, seek_mode::start));

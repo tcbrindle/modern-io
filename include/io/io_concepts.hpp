@@ -9,12 +9,8 @@
 #include <range/v3/range_concepts.hpp>
 
 #include <io/buffer.hpp>
+#include <io/seek_mode.hpp>
 
-// Forward definitions
-namespace asio {
-class mutable_buffer;
-class const_buffer;
-}
 
 namespace io {
 
@@ -43,12 +39,10 @@ struct SeekableStream
     : refines<SyncReadStream>
 {
     template <typename T>
-    using offset_t = typename T::offset_type;
-
-    //template <typename T>
-    //auto requires_(T& t, offset_t<T> offset, seek_mode mode) -> decltype(
-    //    rng::concepts::has_type<offset_t<T>>(t.seek(offset, mode))
-    //);
+    auto requires_(T&& t) -> decltype(
+        valid_expr(
+            t.seek(0, io::seek_mode::start)
+    ));
 };
 
 struct StreamReader
