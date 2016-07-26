@@ -20,8 +20,8 @@ public:
 
     stream_reader() = default;
 
-    stream_reader(stream_type stream)
-            : stream_(std::move(stream))
+    stream_reader(stream_type& stream)
+            : stream_(stream)
     {}
 
 private:
@@ -76,7 +76,7 @@ private:
 
     cursor begin_cursor() const { return cursor{*this}; }
 
-    stream_type stream_{};
+    stream_type& stream_;
 };
 
 static_assert(rng::RandomAccessRange<stream_reader<posix::mmap_file>>(), "");

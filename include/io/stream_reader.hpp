@@ -32,8 +32,8 @@ public:
 
     stream_reader() = default;
 
-    stream_reader(stream_type stream)
-            : stream_(std::move(stream)),
+    stream_reader(stream_type& stream)
+            : stream_(stream),
               done_{false}
     {
         fill_buffer();
@@ -96,7 +96,7 @@ private:
         }
     }
 
-    stream_type stream_{};
+    stream_type& stream_;
     buffer_type buf_{{}};
     buffer_iterator_type pos_{};
     buffer_iterator_type last_{};
@@ -105,9 +105,9 @@ private:
 
 template <typename Stream,
         CONCEPT_REQUIRES_(SyncReadStream<Stream>())>
-stream_reader<Stream> read(Stream&& stream)
+stream_reader<Stream> read(Stream& stream)
 {
-    return stream_reader<Stream>{std::forward<Stream>(stream)};
+    return stream_reader<Stream>{stream};
 }
 
 }

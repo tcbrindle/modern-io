@@ -190,7 +190,7 @@ std::vector<std::uint8_t> read_modern_prealloc(const char* file_name)
 std::vector<std::uint8_t> read_modern_range(const char* file_name)
 {
     auto file = io::open_file(file_name, io::open_mode::read_only);
-    return io::read(std::move(file));
+    return io::read(file);
 }
 
 // Read a file into a preallocated vector using a stream reader
@@ -202,7 +202,7 @@ std::vector<std::uint8_t> read_modern_range_prealloc(const char* file_name)
     std::vector<std::uint8_t> output;
     output.reserve(file_size);
 
-    auto reader = io::read(std::move(file));
+    auto reader = io::read(file);
 
     io::rng::copy(reader, io::rng::back_inserter(output));
 
@@ -227,7 +227,7 @@ std::vector<std::uint8_t> read_modern_mmap_prealloc(const char* file_name)
 std::vector<std::uint8_t> read_modern_mmap_range(const char* file_name)
 {
     auto file = io::posix::mmap_file{file_name, io::open_mode::read_only};
-    return io::read(std::move(file));
+    return io::read(file);
 }
 
 // Read an mmap'd fine into a preallocated vector using a stream reader
@@ -236,7 +236,7 @@ std::vector<std::uint8_t> read_modern_mmap_range_prealloc(const char* file_name)
     auto file = io::posix::mmap_file{file_name, io::open_mode::read_only};
     std::vector<std::uint8_t> output;
     output.reserve(file.size());
-    io::rng::copy(io::read(std::move(file)), io::rng::back_inserter(output));
+    io::rng::copy(io::read(file), io::rng::back_inserter(output));
     return output;
 }
 
