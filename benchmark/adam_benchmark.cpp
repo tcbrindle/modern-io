@@ -1,5 +1,11 @@
 
+// Read/write benchmark for C++, taken from
 // https://cristianadam.eu/20160410/c-plus-plus-i-slash-o-benchmark/
+// (c) 2016 Cristian Adam, licenced CC-BY-4.0.
+// https://creativecommons.org/licenses/by/4.0/
+
+// Addition of modern::io benchmark by Tristan Brindle
+
 
 #include <stdio.h>
 #include <fcntl.h>
