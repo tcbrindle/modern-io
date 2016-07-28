@@ -393,6 +393,13 @@ public:
 
     std::size_t size() const noexcept { return size_; }
 
+    mutable_buffer& operator+=(std::size_t n) noexcept
+    {
+        data_ = static_cast<char*>(data_) + std::min(n, size_);
+        size_ = size_ - std::min(n, size_);
+        return *this;
+    }
+
 private:
     void* data_ = nullptr;
     std::size_t size_ = 0;
@@ -416,6 +423,13 @@ public:
     const void* data() const noexcept { return data_; }
 
     size_t size() const noexcept { return size_;}
+
+    const_buffer& operator+=(std::size_t n) noexcept
+    {
+        data_ = static_cast<const char*>(data_) + std::min(n, size_);
+        size_ = size_ - std::min(n, size_);
+        return *this;
+    }
 
 private:
     const void* data_ = nullptr;
