@@ -52,6 +52,15 @@ struct is_const_buffer_sequence;
 template <class T>
 struct is_dynamic_buffer;
 
+template <class T>
+constexpr bool is_mutable_buffer_sequence_v = is_mutable_buffer_sequence<T>::value;
+
+template <class T>
+constexpr bool is_const_buffer_sequence_v = is_const_buffer_sequence<T>::value;
+
+template <class T>
+constexpr bool is_dynamic_buffer_v = is_dynamic_buffer<T>::value;
+
 // Buffer sequence access
 
 const mutable_buffer* buffer_sequence_begin(const mutable_buffer& b);
@@ -490,18 +499,29 @@ constexpr bool is_detected_convertible_v = is_detected_convertible<To, Op, Args.
 // is_mutable_buffer_sequence implementation
 
 template <class T>
-using buffer_sequence_iter_value_t = decltype(*net::buffer_sequence_begin(std::declval<T>()));
-
-// FIXME: Need to test whether the return of net::buffer_sequence{begin|end} is a bidir iter.
+using buffer_sequence_begin_t = decltype(net::buffer_sequence_begin(std::declval<T>()));
 
 template <class T>
-using is_mutable_buffer_sequence_impl = is_detected_convertible<net::mutable_buffer, buffer_sequence_iter_value_t, T>;
+using buffer_sequence_end_t = decltype(net::buffer_sequence_end(std::declval<T>()));
+
+template <class T>
+using buffer_sequence_iter_value_t = typename std::iterator_traits<buffer_sequence_begin_t<T>>::value_type;
+
+template <class T>
+using buffer_sequence_iter_category_t = typename std::iterator_traits<buffer_sequence_begin_t<T>>::iterator_category;
+
+
+template <class T>
+using is_mutable_buffer_sequence_impl = std::integral_constant<bool,
+    is_detected_convertible_v<net::mutable_buffer, buffer_sequence_iter_value_t, T> &&
+    is_detected_convertible_v<std::bidirectional_iterator_tag, buffer_sequence_iter_category_t, T>>;
 
 // is_const_buffer_sequence implementation
 
 template <class T>
-//using is_const_buffer_sequence_impl = is_detected_convertible<net::const_buffer, buffer_sequence_iter_value_t, const T>;
-using is_const_buffer_sequence_impl = std::true_type;
+using is_const_buffer_sequence_impl = std::integral_constant<bool,
+    is_detected_convertible_v<net::const_buffer, buffer_sequence_iter_value_t, T> &&
+    is_detected_convertible_v<std::bidirectional_iterator_tag, buffer_sequence_iter_category_t, T>>;
 
 // is_dynamic_buffer implementation
 
@@ -541,7 +561,7 @@ using is_dynamic_buffer_impl
                 is_detected_v<has_commit_t, T> &&
                 is_detected_v<has_consume_t, T>>;
 
-}
+} // end namespace detail
 
 template <class T>
 struct is_mutable_buffer_sequence : detail::is_mutable_buffer_sequence_impl<T> {};
