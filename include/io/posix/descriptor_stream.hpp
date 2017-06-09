@@ -30,10 +30,12 @@ struct descriptor_stream {
 
     // SyncReadStream implementation
 
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
+    template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb)
     {
+        static_assert(is_mutable_buffer_sequence_v<MutBufSeq>,
+                      "Argument passed to read_some() is not a MutableBufferSequence");
+
         std::error_code ec;
         auto sz = this->read_some(mb, ec);
         if (ec) {
@@ -42,10 +44,12 @@ struct descriptor_stream {
         return sz;
     }
 
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
+    template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb, std::error_code& ec) noexcept
     {
+        static_assert(is_mutable_buffer_sequence_v<MutBufSeq>,
+                      "Argument passed to read_some() is not a MutableBufferSequence");
+
         ec.clear();
 
         if (buffer_size(mb) == 0) {
@@ -104,7 +108,7 @@ struct descriptor_stream {
     // SyncWriteStream implementation
 
     template <typename ConstBufSeq,
-            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+              typename = std::enable_if_t<is_const_buffer_sequence_v<ConstBufSeq>>
     std::size_t write_some(ConstBufSeq& cb)
     {
         std::error_code ec;
@@ -118,7 +122,7 @@ struct descriptor_stream {
     }
 
     template <typename ConstBufSeq,
-            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+              typename = std::enable_if_t<is_const_buffer_sequence_v<ConstBufSeq>>
     std::size_t write_some(ConstBufSeq& cb, std::error_code& ec) noexcept
     {
         if (io::buffer_size(cb) == 0) {
@@ -173,7 +177,7 @@ private:
     file_descriptor_handle fd_{};
 };
 
-static_assert(SyncReadStream<descriptor_stream>(),
+static_assert(is_sync_read_stream_v<descriptor_stream>,
               "posix_descriptor_stream does not meet the SyncReadStream requirements");
 
 } // end namespace posix

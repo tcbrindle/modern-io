@@ -131,8 +131,7 @@ public:
 
     // SyncReadStream implementation
 
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
+    template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb)
     {
         std::error_code ec;
@@ -143,12 +142,13 @@ public:
         return sz;
     }
 
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
+    template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb, std::error_code& ec) noexcept;
 
     std::size_t read_some(const io::mutable_buffer& mb, std::error_code& ec)
     {
+        ec.clear();
+
         DWORD bytes_read = 0;
         if (!::ReadFile(handle_.get(), mb.data(), mb.size(), &bytes_read, nullptr)) {
             ec.assign(::GetLastError(), std::system_category());
@@ -161,8 +161,7 @@ public:
 
     // SyncWriteStream implementation
 
-    template <typename ConstBufSeq,
-            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    template <typename ConstBufSeq>
     std::size_t write_some(ConstBufSeq& cb)
     {
         std::error_code ec;
@@ -175,12 +174,12 @@ public:
         return sz;
     }
 
-    template <typename ConstBufSeq,
-            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    template <typename ConstBufSeq>
     std::size_t write_some(ConstBufSeq& cb, std::error_code& ec) noexcept;
 
     std::size_t write_some(const io::const_buffer& cb, std::error_code& ec) noexcept
     {
+        ec.clear();
         DWORD bytes_written = 0;
 
         if (!::WriteFile(handle_.get(), cb.data(), cb.size(), &bytes_written, nullptr)) {

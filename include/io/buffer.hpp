@@ -22,6 +22,10 @@ using net::is_mutable_buffer_sequence;
 using net::is_const_buffer_sequence;
 using net::is_dynamic_buffer;
 
+using net::is_mutable_buffer_sequence_v;
+using net::is_const_buffer_sequence_v;
+using net::is_dynamic_buffer_v;
+
 using net::buffer_sequence_begin;
 using net::buffer_sequence_end;
 

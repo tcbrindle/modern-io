@@ -15,7 +15,7 @@ template <typename Stream>
 using offset_t = decltype(std::declval<Stream>().seek(0, seek_mode::start));
 
 template <typename Stream,
-          CONCEPT_REQUIRES_(SeekableStream<Stream>())>
+          typename = std::enable_if_t<is_seekable_stream_v<Stream>>>
 offset_t<Stream>
 seek(Stream& stream,
      offset_t<Stream> offset,
@@ -26,7 +26,7 @@ seek(Stream& stream,
 }
 
 template <typename Stream,
-          CONCEPT_REQUIRES_(SeekableStream<Stream>())>
+          typename = std::enable_if_t<is_seekable_stream_v<Stream>>>
 offset_t<Stream>
 seek(Stream& stream,
      offset_t<Stream> offset,
@@ -36,7 +36,7 @@ seek(Stream& stream,
 }
 
 template <typename Stream,
-          CONCEPT_REQUIRES_(SeekableStream<Stream>())>
+          typename = std::enable_if_t<is_seekable_stream_v<Stream>>>
 offset_t<Stream>
 get_position(const Stream& stream, std::error_code& ec)
 {
@@ -44,7 +44,7 @@ get_position(const Stream& stream, std::error_code& ec)
 }
 
 template <typename Stream,
-          CONCEPT_REQUIRES_(SeekableStream<Stream>())>
+          typename = std::enable_if_t<is_seekable_stream_v<Stream>>>
 offset_t<Stream>
 get_position(const Stream& stream)
 {

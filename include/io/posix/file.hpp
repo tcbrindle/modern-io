@@ -145,8 +145,7 @@ public:
 
     // SyncReadStream implementation
 
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
+    template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb)
     {
         std::error_code ec;
@@ -157,10 +156,12 @@ public:
         return sz;
     }
 
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
+    template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb, std::error_code& ec) noexcept
     {
+        static_assert(is_mutable_buffer_sequence_v<MutBufSeq>,
+                      "Argument passed to read_some() is not a MutableBufferSequence");
+
         ec.clear();
 
         if (buffer_size(mb) == 0) {
@@ -218,8 +219,7 @@ public:
 
     // SyncWriteStream implementation
 
-    template <typename ConstBufSeq,
-            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    template <typename ConstBufSeq>
     std::size_t write_some(ConstBufSeq& cb)
     {
         std::error_code ec;
@@ -232,12 +232,14 @@ public:
         return sz;
     }
 
-    template <typename ConstBufSeq,
-            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    template <typename ConstBufSeq>
     std::size_t write_some(ConstBufSeq& cb, std::error_code& ec) noexcept
     {
+        static_assert(is_const_buffer_sequence_v<ConstBufSeq>,
+                      "Argument passed to write_some() is not a ConstBufferSequence");
+        ec.clear();
+
         if (io::buffer_size(cb) == 0) {
-            ec.clear();
             return 0;
         }
 

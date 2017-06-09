@@ -52,82 +52,61 @@ public:
     /// Constructs the underlying stream from the given arguments.
     /// Simply forwards to the underlying constructor.
     template <typename... Args,
-              CONCEPT_REQUIRES_(std::is_constructible<stream_type, Args...>::value)>
+              typename = std::enable_if_t<std::is_constructible<stream_type, Args...>::value>>
     basic_adaptor(Args&&... args)
             : stream_(std::forward<Args>(args)...)
     {}
 
     /// Read some bytes from the stream, if the underlying stream support this.
     /// Forwards to stream_type::read_some(), if that exists.
-    template <typename MutBufSeq,
-              CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>() &&
-                                SyncReadStream<stream_type>())>
-    std::size_t read_some(const MutBufSeq& mb)
+    template <typename MutBufSeq, typename S = stream_type,
+              typename = std::enable_if_t<is_sync_read_stream_v<S>>>
+    decltype(auto) read_some(const MutBufSeq& mb)
     {
-        std::error_code ec;
-        std::size_t bytes_read = this->read_some(mb, ec);
-        if (ec) {
-            throw std::system_error{ec};
-        }
-        return bytes_read;
+        return stream_.read_some(mb);
     }
 
     /// Read some bytes from the stream, if the underlying stream support this.
     /// Forwards to stream_type::read_some(), if that exists.
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>() &&
-                    SyncReadStream<stream_type>())>
-    std::size_t read_some(const MutBufSeq& mb, std::error_code& ec)
+    template <typename MutBufSeq, typename S = stream_type,
+              typename = std::enable_if_t<is_sync_read_stream_v<S>>>
+    decltype(auto) read_some(const MutBufSeq& mb, std::error_code& ec)
     {
         return stream_.read_some(mb, ec);
     }
 
     /// Write some bytes to the stream, if the underlying stream support this.
     /// Forwards to stream_type::write_some(), if that exists.
-    template <typename ConstBufSeq,
-            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>() &&
-                    SyncReadStream<stream_type>())>
-    std::size_t write_some(const ConstBufSeq& cb)
+    template <typename ConstBufSeq, typename S = stream_type,
+              typename = std::enable_if_t<is_sync_write_stream_v<S>>>
+    decltype(auto) write_some(const ConstBufSeq& cb)
     {
-        std::error_code ec;
-        std::size_t bytes_written = this->write_some(cb, ec);
-        if (ec) {
-            throw std::system_error{ec};
-        }
-        return bytes_written;
+        return stream_.write_some(cb);
     }
 
     /// Write some bytes to the stream, if the underlying stream support this.
     /// Forwards to stream_type::write_some(), if that exists.
-    template <typename ConstBufSeq,
-            CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>() &&
-                    SyncReadStream<stream_type>())>
-    std::size_t write_some(const ConstBufSeq& cb, std::error_code& ec)
+    template <typename ConstBufSeq, typename S = stream_type,
+              typename = std::enable_if_t<is_sync_write_stream_v<S>>>
+    decltype(auto) write_some(const ConstBufSeq& cb, std::error_code& ec)
     {
         return stream_.write_some(cb, ec);
     }
 
     /// Performs a seek, if the underlying stream supports this.
     /// Forwards to stream_type::seek(), if that exists
-    template <typename OffsetType,
-              CONCEPT_REQUIRES_(SeekableStream<Stream>())>
-    auto seek(OffsetType distance, seek_mode from)
-        -> decltype(io::seek(std::declval<Stream>(), distance, from))
+    template <typename OffsetType, typename S = stream_type,
+              typename = std::enable_if_t<is_seekable_stream_v<S>>>
+    decltype(auto) seek(OffsetType distance, seek_mode from)
     {
-        std::error_code ec;
-        auto new_pos = this->seek(distance, from, ec);
-        if (ec) {
-            throw std::system_error{ec};
-        }
-        return new_pos;
+        return stream_.seek(distance, from);
     }
 
     /// Performs a seek, if the underlying stream supports this.
     /// Forwards to stream_type::seek(), if that exists
-    template <typename OffsetType,
-              CONCEPT_REQUIRES_(SeekableStream<Stream>())>
-    auto seek(OffsetType distance, seek_mode from, std::error_code& ec)
-        -> decltype(io::seek(std::declval<Stream>(), distance, from, ec))
+    template <typename OffsetType, typename S = stream_type,
+              typename = std::enable_if_t<is_seekable_stream_v<S>>>
+    decltype(auto) seek(OffsetType distance, seek_mode from, std::error_code& ec)
     {
         return stream_.seek(distance, from, ec);
     }

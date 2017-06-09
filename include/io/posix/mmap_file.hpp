@@ -175,8 +175,7 @@ public:
         mmap_.unmap(ec);
     }
 
-    template <typename ConstBufSeq,
-              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    template <typename ConstBufSeq>
     std::size_t write_some(const ConstBufSeq& cb)
     {
         std::error_code ec;
@@ -187,10 +186,12 @@ public:
         return bytes_written;
     }
 
-    template <typename ConstBufSeq,
-              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    template <typename ConstBufSeq>
     std::size_t write_some(const ConstBufSeq& cb, std::error_code& ec)
     {
+        static_assert(is_const_buffer_sequence_v<ConstBufSeq>,
+                      "Argument passed to write_some() is not a ConstBufferSequence");
+
         ec.clear();
         errno = 0;
 

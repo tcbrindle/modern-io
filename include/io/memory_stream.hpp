@@ -19,8 +19,7 @@ struct memory_stream_impl
 {
     using offset_type = OffsetType;
 
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
+    template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb)
     {
         std::error_code ec;
@@ -31,10 +30,12 @@ struct memory_stream_impl
         return bytes_read;
     }
 
-    template <typename MutBufSeq,
-            CONCEPT_REQUIRES_(MutableBufferSequence<MutBufSeq>())>
+    template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb, std::error_code& ec) noexcept
     {
+        static_assert(io::is_mutable_buffer_sequence_v<MutBufSeq>,
+                      "Argument passed to read_some() is not a MutableBufferSequence");
+
         ec.clear();
 
         if (pos_ == this->size()) {

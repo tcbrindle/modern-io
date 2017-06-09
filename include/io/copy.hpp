@@ -13,8 +13,8 @@ namespace io {
 
 /// Copies the whole of one stream into another
 template <typename ReadStream, typename WriteStream,
-          CONCEPT_REQUIRES_(SyncReadStream<ReadStream>() &&
-                            SyncWriteStream<WriteStream>())>
+          typename = std::enable_if_t<is_sync_read_stream_v<ReadStream> &&
+                                      is_sync_write_stream_v<WriteStream>>>
 std::size_t copy(ReadStream&& src, WriteStream&& dest, std::error_code& ec)
 {
     std::size_t total_bytes_copied = 0;
@@ -49,8 +49,8 @@ std::size_t copy(ReadStream&& src, WriteStream&& dest, std::error_code& ec)
 
 /// @overload
 template <typename ReadStream, typename WriteStream,
-          CONCEPT_REQUIRES_(SyncReadStream<ReadStream>() &&
-                            SyncWriteStream<WriteStream>())>
+          typename = std::enable_if_t<is_sync_read_stream_v<ReadStream> &&
+                                      is_sync_write_stream_v<WriteStream>>>
 std::size_t copy(ReadStream&& src, WriteStream&& dest)
 {
     std::error_code ec;

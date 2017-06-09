@@ -42,8 +42,7 @@ public:
 
 
     /// SyncWriteStream implementation
-    template <typename ConstBufSeq,
-              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    template <typename ConstBufSeq>
     std::size_t write_some(const ConstBufSeq& cb)
     {
         std::error_code ec;
@@ -55,10 +54,12 @@ public:
     }
 
     /// SyncWriteStream implementation
-    template <typename ConstBufSeq,
-              CONCEPT_REQUIRES_(ConstBufferSequence<ConstBufSeq>())>
+    template <typename ConstBufSeq>
     std::size_t write_some(const ConstBufSeq& cb, std::error_code& ec)
     {
+        static_assert(is_const_buffer_sequence_v<ConstBufSeq>,
+                      "Argument passed to write_some() is not a ConstBufferSequence");
+
         ec.clear();
 
         if (io::buffer_size(cb) == 0) {

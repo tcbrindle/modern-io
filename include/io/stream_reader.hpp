@@ -20,12 +20,14 @@ namespace io {
 
 namespace rng = ranges::v3;
 
-template <typename Stream, std::size_t BufferSize = BUFSIZ,
-          CONCEPT_REQUIRES_(SyncReadStream<Stream>())>
+template <typename Stream, std::size_t BufferSize = BUFSIZ>
 class stream_reader
     : public rng::view_facade<stream_reader<Stream>, rng::unknown>
 {
 public:
+    static_assert(is_sync_read_stream_v<Stream>,
+                  "stream_reader must be instantiated with a SyncReadStream");
+
     using stream_type = Stream;
     using buffer_type = std::array<char, BufferSize>;
     using buffer_iterator_type = rng::range_iterator_t<buffer_type>;
@@ -104,7 +106,7 @@ private:
 };
 
 template <typename Stream,
-        CONCEPT_REQUIRES_(SyncReadStream<Stream>())>
+          typename = std::enable_if_t<is_sync_read_stream_v<Stream>>>
 stream_reader<Stream> read(Stream& stream)
 {
     return stream_reader<Stream>{stream};
