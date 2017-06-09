@@ -330,9 +330,6 @@ private:
     file_descriptor_handle fd_{};
 };
 
-static_assert(SeekableStream<posix::file>(),
-              "posix::file does not meet the SeekableStream requirements");
-
 } // end namespace posix
 } // end namespace io
 

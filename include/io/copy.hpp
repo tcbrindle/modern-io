@@ -9,6 +9,8 @@
 #include <io/io_concepts.hpp>
 #include <io/read.hpp>
 
+#include <cassert>
+
 namespace io {
 
 /// Copies the whole of one stream into another
