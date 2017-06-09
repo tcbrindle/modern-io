@@ -1,4 +1,5 @@
 
+# Common CMake build directories
 build*/
 
 # QtCreator
@@ -6,5 +7,9 @@ CMakeLists.txt.user
 
 # CLion
 .idea/
+cmake-build*/
+
+# VS Code
+.vscode/
 
 
