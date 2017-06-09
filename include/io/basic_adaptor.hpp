@@ -95,18 +95,16 @@ public:
 
     /// Performs a seek, if the underlying stream supports this.
     /// Forwards to stream_type::seek(), if that exists
-    template <typename OffsetType, typename S = stream_type,
-              typename = std::enable_if_t<is_seekable_stream_v<S>>>
-    decltype(auto) seek(OffsetType distance, seek_mode from)
+    position_type<stream_type>
+    seek(offset_type<stream_type> distance, seek_mode from)
     {
         return stream_.seek(distance, from);
     }
 
     /// Performs a seek, if the underlying stream supports this.
     /// Forwards to stream_type::seek(), if that exists
-    template <typename OffsetType, typename S = stream_type,
-              typename = std::enable_if_t<is_seekable_stream_v<S>>>
-    decltype(auto) seek(OffsetType distance, seek_mode from, std::error_code& ec)
+    position_type<stream_type>
+    seek(offset_type<stream_type> distance, seek_mode from, std::error_code& ec)
     {
         return stream_.seek(distance, from, ec);
     }
