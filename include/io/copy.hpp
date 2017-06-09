@@ -6,7 +6,7 @@
 #ifndef MODERN_IO_COPY_HPP
 #define MODERN_IO_COPY_HPP
 
-#include <io/io_concepts.hpp>
+#include <io/traits.hpp>
 #include <io/read.hpp>
 
 #include <cassert>

@@ -6,7 +6,7 @@
 #ifndef IO_BASIC_ADAPTOR_HPP
 #define IO_BASIC_ADAPTOR_HPP
 
-#include <io/io_concepts.hpp>
+#include <io/traits.hpp>
 #include <io/seek.hpp>
 
 #include <type_traits>

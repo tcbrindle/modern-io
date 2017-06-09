@@ -7,7 +7,7 @@
 #define IO_STRING_STREAM
 
 #include <io/buffer.hpp>
-#include <io/io_concepts.hpp>
+#include <io/traits.hpp>
 #include <io/memory_stream.hpp>
 #include <io/seek.hpp>
 

@@ -7,7 +7,7 @@
 #define IO_MEMORY_STREAM
 
 #include <io/buffer.hpp>
-#include <io/io_concepts.hpp>
+#include <io/traits.hpp>
 #include <io/seek.hpp>
 
 namespace io {

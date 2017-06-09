@@ -10,7 +10,7 @@
 #include <system_error>
 
 #include <io/io_std/filesystem.hpp>
-#include <io/io_concepts.hpp>
+#include <io/traits.hpp>
 #include <io/read_only.hpp>
 #include <io/seek.hpp>
 #include <io/write_only.hpp>

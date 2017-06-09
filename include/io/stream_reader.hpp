@@ -6,7 +6,7 @@
 #ifndef IO_STREAM_READER_HPP
 #define IO_STREAM_READER_HPP
 
-#include <io/io_concepts.hpp>
+#include <io/traits.hpp>
 #include <io/buffer.hpp>
 #include <io/read.hpp>
 

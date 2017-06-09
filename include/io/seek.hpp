@@ -6,7 +6,7 @@
 #ifndef IO_SEEK_HPP
 #define IO_SEEK_HPP
 
-#include <io/io_concepts.hpp>
+#include <io/traits.hpp>
 #include <io/seek_mode.hpp>
 
 namespace io {
