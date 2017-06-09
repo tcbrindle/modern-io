@@ -46,7 +46,10 @@ using write_some_ec_t = decltype(std::declval<T>().write_some(std::declval<const
                                                               std::declval<std::error_code&>()));
 
 template <typename T>
-using position_type_t = decltype(std::declval<T>().seek(0, io::seek_mode::current));
+using seek_result_t = decltype(std::declval<T>().seek(0, io::seek_mode::current));
+
+template <typename T>
+using seek_ec_result_t = decltype(std::declval<T>().seek(0, io::seek_mode::current, std::declval<std::error_code&>()));
 
 template <typename T>
 using offset_type_t = typename T::offset_type;
@@ -92,7 +95,8 @@ struct is_seekable_stream_impl : std::false_type {};
 template <typename T>
 struct is_seekable_stream_impl<T, void_t<
     disjunction<is_sync_read_stream_impl<T>, is_sync_write_stream_impl<T>>,
-    std::enable_if_t<is_stream_position_impl<position_type_t<T>>::value>
+    std::enable_if_t<std::is_same<seek_result_t<T>, seek_ec_result_t<T>>::value>,
+    std::enable_if_t<is_stream_position_impl<seek_result_t<T>>::value>
 >> : std::true_type {};
 
 }
@@ -116,7 +120,7 @@ template <typename T>
 constexpr bool is_seekable_stream_v = is_seekable_stream<T>::value;
 
 template <typename T>
-using position_type = detail::position_type_t<T>;
+using position_type = detail::seek_result_t<T>;
 
 template <typename T>
 using offset_type = typename position_type<T>::offset_type;

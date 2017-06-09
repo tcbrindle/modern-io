@@ -11,9 +11,6 @@
 
 namespace io {
 
-template <typename Stream>
-using offset_t = decltype(std::declval<Stream>().seek(0, seek_mode::start));
-
 template <typename Stream,
           typename = std::enable_if_t<is_seekable_stream_v<Stream>>>
 position_type<Stream>
