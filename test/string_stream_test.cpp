@@ -25,14 +25,14 @@ TEST_CASE("String streams can be default constructed", "[string_stream]")
 {
     const io::string_stream d{};
     REQUIRE(d.str() == "");
-    REQUIRE(d.get_position() == 0);
+    REQUIRE(d.get_position().offset_from_start() == 0);
 }
 
 TEST_CASE("String streams can be value constructed", "[string_stream]")
 {
     const io::string_stream d{test_string};
     REQUIRE(d.str() == test_string);
-    REQUIRE(d.get_position() == 0);
+    REQUIRE(d.get_position().offset_from_start() == 0);
 }
 
 TEST_CASE("String streams support seeking", "[string_stream]")
@@ -41,18 +41,18 @@ TEST_CASE("String streams support seeking", "[string_stream]")
 
     SECTION("...from start") {
         REQUIRE_NOTHROW(d.seek(10, io::seek_mode::start));
-        REQUIRE(d.get_position() == 10);
+        REQUIRE(d.get_position().offset_from_start() == 10);
     }
 
     SECTION("...from end") {
         REQUIRE_NOTHROW(d.seek(-10, io::seek_mode::end));
-        REQUIRE(d.get_position() == test_string.size() - 10);
+        REQUIRE(d.get_position().offset_from_start() == test_string.size() - 10);
     }
 
     SECTION("...from current") {
         REQUIRE_NOTHROW(d.seek(10, io::seek_mode::start));
         REQUIRE_NOTHROW(d.seek(10, io::seek_mode::current));
-        REQUIRE(d.get_position() == 20);
+        REQUIRE(d.get_position().offset_from_start() == 20);
     }
 
     SECTION("...and throw for negative seeks") {

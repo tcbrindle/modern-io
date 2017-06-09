@@ -152,7 +152,7 @@ void testModernIO(const char* inFile, const char* outFile, std::vector<char>& in
     auto out = io::file{outFile,
                         io::open_mode::write_only | io::open_mode::create};
 
-    const auto inFileSize = io::seek(in, 0, io::seek_mode::end);
+    const auto inFileSize = io::seek(in, 0, io::seek_mode::end).offset_from_start();
     io::seek(in, 0, io::seek_mode::start);
 
     for (size_t bytesLeft = inFileSize, chunk = inBuffer.size(); bytesLeft > 0; bytesLeft -= chunk)

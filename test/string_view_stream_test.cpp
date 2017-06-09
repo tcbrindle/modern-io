@@ -23,14 +23,14 @@ TEST_CASE("string_view streams can be default constructed", "[string_view_stream
 {
     const io::string_view_stream d{};
     REQUIRE(d.str() == "");
-    REQUIRE(d.get_position() == 0);
+    REQUIRE(d.get_position().offset_from_start() == 0);
 }
 
 TEST_CASE("string_view streams can be value constructed", "[string_view_stream]")
 {
     const io::string_view_stream d{test_string_view};
     REQUIRE(d.str() == test_string_view);
-    REQUIRE(d.get_position() == 0);
+    REQUIRE(d.get_position().offset_from_start() == 0);
 }
 
 TEST_CASE("string_view streams support seeking", "[string_view_stream]")
@@ -39,18 +39,18 @@ TEST_CASE("string_view streams support seeking", "[string_view_stream]")
 
     SECTION("...from start") {
         REQUIRE_NOTHROW(d.seek(10, io::seek_mode::start));
-        REQUIRE(d.get_position() == 10);
+        REQUIRE(d.get_position().offset_from_start() == 10);
     }
 
     SECTION("...from end") {
         REQUIRE_NOTHROW(d.seek(-10, io::seek_mode::end));
-        REQUIRE(d.get_position() == test_string_view.size() - 10);
+        REQUIRE(d.get_position().offset_from_start() == test_string_view.size() - 10);
     }
 
     SECTION("...from current") {
         REQUIRE_NOTHROW(d.seek(10, io::seek_mode::start));
         REQUIRE_NOTHROW(d.seek(10, io::seek_mode::current));
-        REQUIRE(d.get_position() == 20);
+        REQUIRE(d.get_position().offset_from_start() == 20);
     }
 
     SECTION("...and throw for negative seeks") {

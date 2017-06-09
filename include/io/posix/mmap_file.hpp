@@ -195,7 +195,7 @@ public:
         ec.clear();
         errno = 0;
 
-        auto buf = io::buffer(data(), size()) + get_position();
+        auto buf = io::buffer(data(), size()) + get_position().offset_from_start();
 
         auto total_bytes_written = io::buffer_copy(buf, cb);
         this->seek(total_bytes_written, io::seek_mode::current, ec);

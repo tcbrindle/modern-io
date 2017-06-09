@@ -7,9 +7,8 @@
 #define UNICODE
 
 #include <io/open_mode.hpp>
+#include <io/stream_position.hpp>
 #include <io/windows/handle.hpp>
-
-#include <iostream>
 
 namespace io {
 namespace windows {
@@ -65,6 +64,7 @@ constexpr DWORD open_mode_to_creation_disp(open_mode m)
 class file {
 public:
     using offset_type = __int64;
+    using position_type = io::stream_position<offset_type>;
     using native_handle_type = HANDLE;
 
     file() = default;
@@ -189,17 +189,17 @@ public:
         return bytes_written;
     }
 
-    offset_type seek(offset_type offset, seek_mode from)
+    position_type seek(offset_type offset, seek_mode from)
     {
         std::error_code ec;
         auto o = this->seek(offset, from, ec);
         if (ec) {
             throw std::system_error(ec);
         }
-        return o;
+        return position_type{o};
     }
 
-    offset_type
+    position_type
     seek(offset_type offset, seek_mode from, std::error_code& ec) noexcept
     {
         LARGE_INTEGER l_offset{};
@@ -210,7 +210,7 @@ public:
         if (!success) {
             ec.assign(::GetLastError(), std::system_category());
         }
-        return new_pos.QuadPart;
+        return position_type{new_pos.QuadPart};
     }
 
     void sync(std::error_code& ec) noexcept

@@ -7,6 +7,7 @@
 #define IO_MEMORY_STREAM
 
 #include <io/buffer.hpp>
+#include <io/stream_position.hpp>
 #include <io/traits.hpp>
 #include <io/seek.hpp>
 
@@ -18,6 +19,7 @@ template <typename Derived, typename OffsetType>
 struct memory_stream_impl
 {
     using offset_type = OffsetType;
+    using position_type = io::stream_position<offset_type>;
 
     template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb)
@@ -49,18 +51,18 @@ struct memory_stream_impl
     }
 
     /// SeekableStream implementation
-    offset_type seek(offset_type from, seek_mode mode)
+    position_type seek(offset_type from, seek_mode mode)
     {
         std::error_code ec;
-        auto offset = this->seek(from, mode, ec);
+        auto pos = this->seek(from, mode, ec);
         if (ec) {
             throw std::system_error{ec};
         }
-        return offset;
+        return pos;
     }
 
     /// SeekableStream implementation
-    offset_type seek(offset_type from, seek_mode mode, std::error_code& ec) noexcept
+    position_type seek(offset_type from, seek_mode mode, std::error_code& ec) noexcept
     {
         auto old_pos = pos_; // To reset on error
 
@@ -81,11 +83,11 @@ struct memory_stream_impl
             ec = std::make_error_code(std::errc::invalid_seek);
         }
 
-        return pos_;
+        return position_type{pos_};
     }
 
     /// SeekableStream implementation
-    offset_type get_position() const noexcept { return pos_; }
+    position_type get_position() const noexcept { return position_type{pos_}; }
 
     const void* data() const noexcept
     {
@@ -103,7 +105,7 @@ struct memory_stream_impl
     }
 
 private:
-    offset_type pos_ = 0;
+    offset_type pos_{};
 };
 
 } // end namespace detail

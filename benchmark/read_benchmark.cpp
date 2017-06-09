@@ -179,7 +179,7 @@ std::vector<std::uint8_t> read_modern_inc(const char* file_name)
 std::vector<std::uint8_t> read_modern_prealloc(const char* file_name)
 {
     auto file = io::open_file(file_name, io::open_mode::read_only);
-    auto file_size = io::seek(file, 0, io::seek_mode::end);
+    auto file_size = io::seek(file, 0, io::seek_mode::end).offset_from_start();
     io::seek(file, 0, io::seek_mode::start);
     std::vector<std::uint8_t> output(file_size);
     io::read(file, io::buffer(output));
@@ -197,7 +197,7 @@ std::vector<std::uint8_t> read_modern_range(const char* file_name)
 std::vector<std::uint8_t> read_modern_range_prealloc(const char* file_name)
 {
     auto file = io::open_file(file_name, io::open_mode::read_only);
-    auto file_size = io::seek(file, 0, io::seek_mode::end);
+    auto file_size = io::seek(file, 0, io::seek_mode::end).offset_from_start();
     io::seek(file, 0, io::seek_mode::start);
     std::vector<std::uint8_t> output;
     output.reserve(file_size);

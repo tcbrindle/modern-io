@@ -9,6 +9,7 @@
 #include <io/io_std/filesystem.hpp>
 #include <io/open_mode.hpp>
 #include <io/seek.hpp>
+#include <io/stream_position.hpp>
 #include <io/posix/file_descriptor_handle.hpp>
 
 #include <fcntl.h>
@@ -70,6 +71,7 @@ constexpr int open_mode_to_posix_mode(open_mode m)
 class file {
 public:
     using offset_type = ::off_t;
+    using position_type = io::stream_position<offset_type>;
     using native_handle_type = int;
 
     file() = default;
@@ -283,7 +285,7 @@ public:
         return bytes_written;
     }
 
-    offset_type seek(offset_type offset, seek_mode from)
+    position_type seek(offset_type offset, seek_mode from)
     {
         std::error_code ec;
         auto o = this->seek(offset, from, ec);
@@ -293,7 +295,7 @@ public:
         return o;
     }
 
-    offset_type
+    position_type
     seek(offset_type offset, seek_mode from, std::error_code& ec) noexcept
     {
         ec.clear();
@@ -303,10 +305,10 @@ public:
 
         if (o < 0) {
             ec.assign(errno, std::system_category());
-            return offset_type{};
+            return position_type{};
         }
 
-        return static_cast<offset_type>(o);
+        return position_type{o};
     }
 
     void sync(std::error_code& ec) noexcept

@@ -71,7 +71,7 @@ public:
         auto last = io::buffer_sequence_end(cb);
 
         while (first != last) {
-            str_.insert(this->get_position(),
+            str_.insert(this->get_position().offset_from_start(),
                         reinterpret_cast<const char_type*>(first->data()),
                         first->size()/sizeof(char_type));
             total_bytes_written += first->size();
