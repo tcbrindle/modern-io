@@ -15,6 +15,12 @@ namespace detail {
 
 template <class...> using void_t = void;
 
+template<class...> struct conjunction : std::true_type { };
+template<class B1> struct conjunction<B1> : B1 { };
+template<class B1, class... Bn>
+struct conjunction<B1, Bn...>
+        : std::conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
+
 template<class...> struct disjunction : std::false_type { };
 template<class B1> struct disjunction<B1> : B1 { };
 template<class B1, class... Bn>
@@ -40,9 +46,26 @@ using write_some_ec_t = decltype(std::declval<T>().write_some(std::declval<const
                                                               std::declval<std::error_code&>()));
 
 template <typename T>
-using seek_result_t = decltype(std::declval<T>().seek(std::declval<typename T::offset_type>(),
-                                                      std::declval<io::seek_mode>()));
+using position_type_t = decltype(std::declval<T>().seek(0, io::seek_mode::current));
 
+template <typename T>
+using offset_type_t = typename T::offset_type;
+
+template <typename T, typename = void>
+struct is_stream_position_impl : std::false_type {};
+
+template <typename T>
+struct is_stream_position_impl<T, void_t<
+    std::enable_if_t<std::is_signed<offset_type_t<T>>::value>,
+    std::enable_if_t<std::is_default_constructible<T>::value>,
+    std::enable_if_t<std::is_constructible<T, offset_type_t<T>>::value>,
+    std::enable_if_t<std::is_same<offset_type_t<T>, decltype(std::declval<const T>().offset_from_start())>::value>,
+    std::enable_if_t<std::is_same<T&, decltype(std::declval<T>() += std::declval<offset_type_t<T>>())>::value>,
+    std::enable_if_t<std::is_same<T&, decltype(std::declval<T>() += std::declval<offset_type_t<T>>())>::value>,
+    std::enable_if_t<std::is_same<T, decltype(std::declval<T>() + std::declval<offset_type_t<T>>())>::value>,
+    std::enable_if_t<std::is_same<T, decltype(std::declval<T>() - std::declval<offset_type_t<T>>())>::value>,
+    std::enable_if_t<std::is_same<offset_type_t<T>, decltype(std::declval<T>() - std::declval<T>())>::value>
+>> : std::true_type {};
 
 template <typename T, typename = void_t<>>
 struct is_sync_read_stream_impl : std::false_type {};
@@ -69,7 +92,7 @@ struct is_seekable_stream_impl : std::false_type {};
 template <typename T>
 struct is_seekable_stream_impl<T, void_t<
     disjunction<is_sync_read_stream_impl<T>, is_sync_write_stream_impl<T>>,
-    std::is_same<typename T::offset_type, seek_result_t<T>>
+    std::enable_if_t<is_stream_position_impl<position_type_t<T>>::value>
 >> : std::true_type {};
 
 }
@@ -91,6 +114,12 @@ using is_seekable_stream = detail::is_seekable_stream_impl<T>;
 
 template <typename T>
 constexpr bool is_seekable_stream_v = is_seekable_stream<T>::value;
+
+template <typename T>
+using position_type = detail::position_type_t<T>;
+
+template <typename T>
+using offset_type = typename position_type<T>::offset_type;
 
 
 } // end namespace io
