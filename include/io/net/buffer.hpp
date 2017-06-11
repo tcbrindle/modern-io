@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cstring> // for std::memcpy
 #include <io/io_std/string_view.hpp>
 #include <limits>
