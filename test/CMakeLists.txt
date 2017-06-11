@@ -5,6 +5,7 @@ find_package(Threads REQUIRED)
 add_executable(test-modern-io
     basic_test.cpp
     buffer_copy_test.cpp
+    buffered_stream_test.cpp
     catch_main.cpp
     copy_test.cpp
     file_test.cpp
