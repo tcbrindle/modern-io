@@ -118,6 +118,25 @@ struct buffered_write_stream {
         return bytes_written;
     }
 
+    io::position_type<next_layer_type>
+    seek(io::offset_type<next_layer_type> distance, io::seek_mode from)
+    {
+        flush();
+        return base_.seek(distance, from);
+    }
+
+    io::position_type<next_layer_type>
+    seek(io::offset_type<next_layer_type> distance, io::seek_mode from,
+         std::error_code& ec)
+    {
+        ec.clear();
+        flush(ec);
+        if (ec) {
+            return 0;
+        }
+        return base_.seek(distance, from, ec);
+    }
+
 private:
     template <typename ConstBufSeq>
     std::size_t copy(const ConstBufSeq& cb)

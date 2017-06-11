@@ -110,6 +110,20 @@ struct buffered_stream {
         return read_stream_.next_layer().flush(ec);
     }
 
+    /* SeekableStream implementation */
+    io::position_type<next_layer_type>
+    seek(io::offset_type<next_layer_type> distance, io::seek_mode from)
+    {
+        read_stream_.seek(distance, from);
+    }
+
+    io::position_type<next_layer_type>
+    seek(io::offset_type<next_layer_type> distance, io::seek_mode from,
+         std::error_code& ec)
+    {
+        read_stream_.seek(distance, from, ec);
+    }
+
 private:
     using write_stream_type = io::buffered_write_stream<base_stream_type>;
     write_stream_type write_stream_;

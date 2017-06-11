@@ -162,6 +162,21 @@ struct buffered_read_stream
         return storage_.size() - prev_size;
     }
 
+    io::position_type<next_layer_type>
+    seek(io::offset_type<next_layer_type> distance, io::seek_mode from)
+    {
+        storage_.clear();
+        return base_.seek(distance, from);
+    }
+
+    io::position_type<next_layer_type>
+    seek(io::offset_type<next_layer_type> distance, io::seek_mode from,
+         std::error_code& ec)
+    {
+        storage_.clear();
+        return base_.seek(distance, from, ec);
+    }
+
 private:
     template <typename MutBufSeq>
     size_type copy(const MutBufSeq& mb)
