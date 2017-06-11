@@ -78,12 +78,8 @@ struct byte_range {
     }
 
     iterator begin() { return iterator{this}; }
-    const_iterator begin() const { return const_iterator{this};}
-    const_iterator cbegin() const { return const_iterator{this}; }
 
     iterator end() { return iterator{}; }
-    const_iterator end() const { return const_iterator{}; }
-    const_iterator cend() const { return const_iterator{}; }
 
 private:
     void next()
