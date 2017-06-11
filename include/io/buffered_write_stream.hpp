@@ -51,6 +51,13 @@ struct buffered_write_stream {
           storage_(buffer_size, allocator)
     {}
 
+    ~buffered_write_stream()
+    {
+        std::error_code ec;
+        this->flush(ec);
+        // Swallow errors -- there's nothing else we can do
+    }
+
     next_layer_type& next_layer()
     {
         return base_;
