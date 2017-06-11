@@ -75,6 +75,11 @@ struct buffered_read_stream
         }
 
         if (storage_.empty()) {
+            // if the buffer size we have been given is >= our buffer capacity,
+            // avoid the fill and just copy straight through
+            if (io::buffer_size(mb) >= storage_.capacity()) {
+                return base_.read_some(mb);
+            }
             this->fill();
         }
 
@@ -90,8 +95,13 @@ struct buffered_read_stream
             return 0;
         }
 
-        if (storage_.empty() && !this->fill(ec)) {
-            return 0;
+        if (storage_.empty()) {
+            if (io::buffer_size(mb) >= storage_.capacity()) {
+                return base_.read_some(mb, ec);
+            }
+            if (this->fill(ec) == 0) {
+                return 0;
+            }
         }
 
         return this->copy(mb);
