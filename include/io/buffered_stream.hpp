@@ -17,39 +17,49 @@ namespace io {
 template <typename Stream, typename Allocator = std::allocator<unsigned char>>
 struct buffered_stream {
     using allocator_type = Allocator;
-    using base_stream_type = Stream;
+    using next_layer_type = std::remove_reference_t<Stream>;
 
 
-    template <typename S = base_stream_type,
+    template <typename S = next_layer_type,
               std::enable_if_t<std::is_default_constructible<S>::value>>
     buffered_stream()
     {}
 
-    template <typename S = base_stream_type,
+    template <typename S = next_layer_type,
             std::enable_if_t<std::is_default_constructible<S>::value>>
     explicit buffered_stream(const allocator_type& allocator)
             : write_stream_{allocator},
               read_stream_(write_stream_, allocator)
     {}
 
-    explicit buffered_stream(base_stream_type base)
+    explicit buffered_stream(next_layer_type base)
         : write_stream_(std::move(base))
     {}
 
-    buffered_stream(base_stream_type base,
+    buffered_stream(next_layer_type base,
                     std::size_t read_buffer_size,
                     std::size_t write_buffer_size)
         : buffered_stream(std::move(base), read_buffer_size,
                           write_buffer_size, allocator_type{})
     {}
 
-    buffered_stream(base_stream_type base,
+    buffered_stream(next_layer_type base,
                     std::size_t read_buffer_size,
                     std::size_t write_buffer_size,
                     const allocator_type& allocator)
         : write_stream_(std::move(base), write_buffer_size, allocator),
           read_stream_(write_stream_, read_buffer_size, allocator)
     {}
+
+    next_layer_type& next_layer()
+    {
+        return read_stream_.next_layer().next_layer();
+    }
+
+    const next_layer_type& next_layer() const
+    {
+        return read_stream_.next_layer().next_layer();
+    }
 
     /* BufferedSyncReadStream implementation */
     template <typename MutBufSeq>
@@ -125,7 +135,7 @@ struct buffered_stream {
     }
 
 private:
-    using write_stream_type = io::buffered_write_stream<base_stream_type>;
+    using write_stream_type = io::buffered_write_stream<next_layer_type>;
     write_stream_type write_stream_;
 
     using read_stream_type = io::buffered_read_stream<write_stream_type&>;

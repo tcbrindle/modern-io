@@ -65,6 +65,11 @@ struct buffered_read_stream
         return base_;
     }
 
+    const next_layer_type& next_layer() const
+    {
+        return base_;
+    }
+
     /* SyncReadStream implementation */
 
     template <typename MutBufSeq>

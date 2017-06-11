@@ -63,6 +63,11 @@ struct buffered_write_stream {
         return base_;
     }
 
+    const next_layer_type& next_layer() const
+    {
+        return base_;
+    }
+
     /* Pass-through SyncReadStream implementation */
     template <typename MutBufSeq, typename S = next_layer_type,
               typename = std::enable_if_t<io::is_sync_read_stream_v<S>>>
@@ -117,7 +122,7 @@ struct buffered_write_stream {
         return bytes_written;
     }
 
-    void flush(std::error_code& ec)
+    std::size_t flush(std::error_code& ec)
     {
         const auto bytes_written = io::write(base_, io::buffer(
                 storage_.data(), storage_.size()), io::transfer_all{}, ec);
