@@ -10,7 +10,7 @@ TEST_CASE("Basic byte_range test")
 
     io::string_stream stream(string);
 
-    io::byte_range<io::string_stream> range(stream);
+    io::byte_reader<io::string_stream> range(stream);
 
     REQUIRE(std::equal(std::begin(range), std::end(range),
                        std::begin(string), std::end(string)));

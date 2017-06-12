@@ -14,6 +14,7 @@
 #include <io/detail/buffer_resize_guard.hpp>
 #include <io/read.hpp>
 #include <io/traits.hpp>
+#include <io/io_std/optional.hpp>
 
 namespace io {
 
@@ -132,6 +133,47 @@ struct buffered_read_stream
 
         return this->peek_copy(mb);
     }
+
+    unsigned char read_next()
+    {
+        if (storage_.empty()) {
+            this->fill();
+        }
+
+        const auto byte =  storage_.front();
+        storage_.consume(1);
+        return byte;
+    }
+
+    io_std::optional<unsigned char> read_next(std::error_code& ec)
+    {
+        if (storage_.empty() && !this->fill(ec)) {
+            return io_std::nullopt;
+        }
+
+        const auto byte =  storage_.front();
+        storage_.consume(1);
+        return byte;
+    }
+
+    unsigned char peek_next()
+    {
+        if (storage_.empty()) {
+            this->fill();
+        }
+
+        return storage_.front();
+    }
+
+    io_std::optional<unsigned char> peek_next(std::error_code& ec)
+    {
+        if (storage_.empty() && !this->fill(ec)) {
+            return io_std::nullopt;
+        }
+
+        return storage_.front();
+    }
+
 
 
     /* SyncWriteStream implementation */
