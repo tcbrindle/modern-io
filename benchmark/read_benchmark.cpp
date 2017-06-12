@@ -13,13 +13,14 @@
 
 #include <io/file.hpp>
 #include <io/read.hpp>
-#include <io/stream_reader.hpp>
+#include <io/byte_range.hpp>
 
 #ifdef _POSIX_VERSION
 #include <io/posix/mmap_file.hpp>
 #endif
 
 #include <range/v3/algorithm/copy.hpp>
+#include <io/buffered_read_stream.hpp>
 
 #include "black_box.hpp"
 
@@ -186,11 +187,13 @@ std::vector<std::uint8_t> read_modern_prealloc(const char* file_name)
     return output;
 }
 
-// Read a file into a vector using a stream reader (in two lines!)
+// Read a file into a vector using a stream reader
 std::vector<std::uint8_t> read_modern_range(const char* file_name)
 {
     auto file = io::open_file(file_name, io::open_mode::read_only);
-    return io::read(file);
+    auto buf_file = io::buffered_read_stream<decltype(file)>(std::move(file));
+    auto reader = io::read(buf_file);
+    return std::vector<std::uint8_t>(std::begin(reader), std::end(reader));
 }
 
 // Read a file into a preallocated vector using a stream reader
@@ -202,9 +205,10 @@ std::vector<std::uint8_t> read_modern_range_prealloc(const char* file_name)
     std::vector<std::uint8_t> output;
     output.reserve(file_size);
 
-    auto reader = io::read(file);
+    auto buf_file = io::buffered_read_stream<decltype(file)>(std::move(file));
+    auto reader = io::read(buf_file);
 
-    io::rng::copy(reader, io::rng::back_inserter(output));
+    std::copy(std::begin(reader), std::end(reader), std::back_inserter(output));
 
     return output;
 }
@@ -227,7 +231,8 @@ std::vector<std::uint8_t> read_modern_mmap_prealloc(const char* file_name)
 std::vector<std::uint8_t> read_modern_mmap_range(const char* file_name)
 {
     auto file = io::posix::mmap_file{file_name, io::open_mode::read_only};
-    return io::read(file);
+    auto reader = io::read(file);
+    return std::vector<std::uint8_t>(std::begin(reader), std::end(reader));
 }
 
 // Read an mmap'd fine into a preallocated vector using a stream reader
@@ -236,7 +241,8 @@ std::vector<std::uint8_t> read_modern_mmap_range_prealloc(const char* file_name)
     auto file = io::posix::mmap_file{file_name, io::open_mode::read_only};
     std::vector<std::uint8_t> output;
     output.reserve(file.size());
-    io::rng::copy(io::read(file), io::rng::back_inserter(output));
+    auto reader = io::read(file);
+    std::copy(std::begin(reader), std::end(reader), std::back_inserter(output));
     return output;
 }
 

@@ -218,7 +218,4 @@ private:
 } // namespace posix
 } // end namespace io
 
-// FIXME: This is ugly
-#include "mmap_stream_reader.hpp"
-
 #endif // IO_POSIX_MMAP_FILE_HPP
