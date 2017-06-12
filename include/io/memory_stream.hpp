@@ -10,6 +10,7 @@
 #include <io/stream_position.hpp>
 #include <io/traits.hpp>
 #include <io/seek.hpp>
+#include <io/io_std/optional.hpp>
 
 namespace io {
 
@@ -48,6 +49,48 @@ struct memory_stream_impl
         pos_ += bytes_copied;
 
         return bytes_copied;
+    }
+
+    unsigned char read_next()
+    {
+        std::error_code ec;
+        const auto opt = read_next(ec);
+        if (opt) {
+            return *opt;
+        } else {
+            throw std::system_error{ec};
+        }
+    }
+
+    io_std::optional<unsigned char> read_next(std::error_code& ec)
+    {
+        if (pos_ == size()) {
+            ec = io::stream_errc::eof;
+            return io_std::nullopt;
+        } else {
+            return static_cast<const unsigned char*>(data())[pos_++];
+        }
+    }
+
+    unsigned char peek_next()
+    {
+        std::error_code ec;
+        const auto opt = peek_next(ec);
+        if (opt) {
+            return *opt;
+        } else {
+            throw std::system_error{ec};
+        }
+    }
+
+    io_std::optional<unsigned char> peek_next(std::error_code& ec)
+    {
+        if (pos_ == size()) {
+            ec = io::stream_errc::eof;
+            return io_std::nullopt;
+        } else {
+            return static_cast<const unsigned char*>(data())[pos_];
+        }
     }
 
     /// SeekableStream implementation
