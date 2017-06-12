@@ -21,6 +21,16 @@ struct memory_stream_impl
 {
     using offset_type = OffsetType;
     using position_type = io::stream_position<offset_type>;
+    using size_type = offset_type;
+    using value_type = unsigned char;
+    using reference = value_type&;
+    using const_reference = const value_type&;
+    using pointer = value_type*;
+    using const_pointer = const value_type*;
+    using iterator = const_pointer;
+    using const_iterator = const_pointer;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     template <typename MutBufSeq>
     std::size_t read_some(const MutBufSeq& mb)
@@ -68,7 +78,7 @@ struct memory_stream_impl
             ec = io::stream_errc::eof;
             return io_std::nullopt;
         } else {
-            return static_cast<const unsigned char*>(data())[pos_++];
+            return static_cast<const_pointer>(data())[pos_++];
         }
     }
 
@@ -137,7 +147,7 @@ struct memory_stream_impl
         return static_cast<const Derived*>(this)->data();
     }
 
-    offset_type size() const noexcept
+    size_type size() const noexcept
     {
         return static_cast<const Derived*>(this)->size();
     }
@@ -146,6 +156,23 @@ struct memory_stream_impl
     {
         return io::buffer(data(), size()) + pos_;
     }
+
+    // Iterator support
+    iterator begin() { return static_cast<iterator>(this->data()); }
+    const_iterator begin() const { return static_cast<const_iterator>(this->data()); }
+    const_iterator cbegin() const { return begin(); }
+
+    iterator end() { return begin() + this->size(); }
+    const_iterator end() const { return begin() + this->size(); }
+    const_iterator cend() const { return end(); }
+
+    reverse_iterator rbegin() { return reverse_iterator{end()}; }
+    const_reverse_iterator rbegin() const { return const_reverse_iterator{end()}; }
+    const_reverse_iterator crbegin() const { return rbegin(); }
+
+    reverse_iterator rend() { return reverse_iterator{begin()}; }
+    const_reverse_iterator rend() const { return const_reverse_iterator{begin()}; }
+    const_reverse_iterator crend() const { return rend(); }
 
 private:
     offset_type pos_{};

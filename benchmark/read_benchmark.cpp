@@ -13,7 +13,7 @@
 
 #include <io/file.hpp>
 #include <io/read.hpp>
-#include <io/byte_range.hpp>
+#include <io/byte_reader.hpp>
 
 #ifdef _POSIX_VERSION
 #include <io/posix/mmap_file.hpp>
@@ -231,8 +231,7 @@ std::vector<std::uint8_t> read_modern_mmap_prealloc(const char* file_name)
 std::vector<std::uint8_t> read_modern_mmap_range(const char* file_name)
 {
     auto file = io::posix::mmap_file{file_name, io::open_mode::read_only};
-    auto reader = io::read(file);
-    return std::vector<std::uint8_t>(std::begin(reader), std::end(reader));
+    return std::vector<std::uint8_t>(std::begin(file), std::end(file));
 }
 
 // Read an mmap'd fine into a preallocated vector using a stream reader
@@ -241,8 +240,7 @@ std::vector<std::uint8_t> read_modern_mmap_range_prealloc(const char* file_name)
     auto file = io::posix::mmap_file{file_name, io::open_mode::read_only};
     std::vector<std::uint8_t> output;
     output.reserve(file.size());
-    auto reader = io::read(file);
-    std::copy(std::begin(reader), std::end(reader), std::back_inserter(output));
+    std::copy(std::begin(file), std::end(file), std::back_inserter(output));
     return output;
 }
 
