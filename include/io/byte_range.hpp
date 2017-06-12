@@ -12,14 +12,14 @@
 namespace io {
 
 template <typename Stream>
-struct byte_range {
+struct byte_reader{
     using stream_type = Stream;
-    using byte_type = unsigned char;
+    using value_type = unsigned char;
     struct iterator;
     using const_iterator = iterator;
 
     struct iterator {
-        using value_type = byte_type;
+        using value_type = typename byte_reader::value_type;
         using difference_type = std::ptrdiff_t;
         using reference = value_type&;
         using pointer = value_type*;
@@ -27,7 +27,7 @@ struct byte_range {
 
         iterator() = default;
 
-        explicit iterator(byte_range* ptr)
+        explicit iterator(byte_reader* ptr)
             : range_(ptr)
         {}
 
@@ -66,12 +66,12 @@ struct byte_range {
             return range_ == nullptr || range_->done_;
         }
 
-        byte_range* range_ = nullptr;
+        byte_reader* range_ = nullptr;
     };
 
-    byte_range() = default;
+    byte_reader() = default;
 
-    explicit byte_range(Stream& stream)
+    explicit byte_reader(Stream& stream)
         : stream_(std::addressof(stream))
     {
         next();
@@ -98,7 +98,7 @@ private:
 
     stream_type* stream_ = nullptr;
     std::error_code ec;
-    byte_type val_{};
+    value_type val_{};
     bool done_ = false;
 };
 
