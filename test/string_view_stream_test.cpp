@@ -6,7 +6,7 @@
 #include "catch.hpp"
 
 #include <io/string_view_stream.hpp>
-#include <io/byte_range.hpp>
+#include <io/byte_reader.hpp>
 
 #include <array>
 #include <io/io_std/string_view.hpp>

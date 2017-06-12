@@ -6,7 +6,7 @@ add_executable(test-modern-io
     basic_test.cpp
     buffer_copy_test.cpp
     buffered_stream_test.cpp
-    byte_range_test.cpp
+    byte_reader_test.cpp
     catch_main.cpp
     copy_test.cpp
     file_test.cpp

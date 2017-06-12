@@ -2,7 +2,7 @@
 #include "catch.hpp"
 
 #include <io/string_stream.hpp>
-#include <io/byte_range.hpp>
+#include <io/byte_reader.hpp>
 
 TEST_CASE("Basic byte_range test")
 {

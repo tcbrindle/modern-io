@@ -3,8 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef MODERN_IO_BYTE_RANGE_HPP_INCLUDED
-#define MODERN_IO_BYTE_RANGE_HPP_INCLUDED
+#ifndef MODERN_IO_BYTE_READER_HPP_INCLUDED
+#define MODERN_IO_BYTE_READER_HPP_INCLUDED
 
 #include <io/buffer.hpp>
 #include <io/read.hpp>
