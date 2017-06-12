@@ -80,6 +80,8 @@ struct buffered_stream_storage {
         }
     }
 
+    byte_type front() const { return vec_[begin_]; }
+
 private:
     size_type begin_ = 0;
     size_type end_ = 0;
