@@ -8,8 +8,23 @@
 
 #include <io/buffer.hpp>
 #include <io/read.hpp>
+#include <io/traits.hpp>
+#include <io/io_std/optional.hpp>
 
 namespace io {
+
+namespace detail {
+
+template <typename Stream, typename = void>
+struct has_read_next : std::false_type {};
+
+template <typename Stream>
+struct has_read_next<Stream, void_t<
+    std::enable_if_t<std::is_same<decltype(std::declval<Stream>().read_next(std::declval<std::error_code&>())),
+                                           io_std::optional<unsigned char>>::value>
+>> : std::true_type {};
+
+}
 
 template <typename Stream>
 struct byte_reader{
@@ -82,17 +97,31 @@ struct byte_reader{
     iterator end() { return iterator{}; }
 
 private:
+
+    io_std::optional<unsigned char>
+    read_next(std::true_type /*IsBuffered*/, std::error_code& ec)
+    {
+        return stream_->read_next(ec);
+    }
+
+    io_std::optional<unsigned char>
+    read_next(std::false_type /*IsBuffered*/, std::error_code& ec)
+    {
+        char c;
+        if (!io::read(*stream_, io::buffer(&c, 1), ec)) {
+            return io_std::nullopt;
+        }
+        return c;
+    }
+
+
     void next()
     {
-        io::mutable_buffer buf(&val_, 1);
-        io::read(*stream_, buf, ec);
-        if (ec) {
-            if (ec == io::stream_errc::eof) {
-                done_ = true;
-            }
-            else  {
-                throw std::system_error(ec);
-            }
+        const auto next_val = read_next(detail::has_read_next<stream_type>{}, ec);
+        if (next_val) {
+            val_ = *next_val;
+        } else {
+            done_ = true;
         }
     }
 
