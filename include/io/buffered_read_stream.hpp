@@ -54,7 +54,7 @@ struct buffered_read_stream
     {}
 
     template <typename S = Stream,
-              typename = std::enable_if_t<!std::is_reference<Stream>::value>>
+              typename = std::enable_if_t<!std::is_reference<S>::value>>
     buffered_read_stream(Stream&& base, size_type buffer_size,
                         const allocator_type& allocator)
         : base_(std::move(base)),
@@ -173,7 +173,6 @@ struct buffered_read_stream
 
         return storage_.front();
     }
-
 
 
     /* SyncWriteStream implementation */
