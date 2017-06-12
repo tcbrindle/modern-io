@@ -131,7 +131,12 @@ private:
     bool done_ = false;
 };
 
-
+template <typename Stream,
+          typename = std::enable_if_t<io::is_sync_read_stream_v<Stream>>>
+byte_reader<Stream> read(Stream& stream)
+{
+    return byte_reader<Stream>(stream);
+}
 
 }
 
